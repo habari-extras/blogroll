@@ -36,6 +36,8 @@ Class BlogRoll extends Plugin
 			$links= $form->add('textmulti','links','Links list: (use <i>name</i>|<i>url</i> format)');
 			$max= $form->add('text','max','Max. displayed links: ','6');
 			$random=$form->add('checkbox','random','Randomize links ',false);
+			$divclass= $form->add('text','divclass','&lt;div&gt; element class: ','module');
+			$divid= $form->add('text','divid','&lt;div&gt; element id: ');
 			$form->on_success( array( $this, 'saved_config' ) );
 			$form->out();
 			}
@@ -58,16 +60,17 @@ Class BlogRoll extends Plugin
 	$links= Options::get( strtolower( get_class( $this ) ) . ':links' );
 	$max= Options::get( strtolower( get_class( $this ) ) . ':max');
 	$randomize= Options::get( strtolower( get_class ( $this ) ) . ':random' );
+	$divclass= Options::get( strtolower( get_class ( $this ) ) . ':divclass' );
+	$divid= Options::get( strtolower( get_class ( $this ) ) . ':divid' );
 	
 	//set default values if options not set
 	if ( empty( $max ) ) $max= 6;
 	if ( empty( $random ) ) $random= false;
-	
-	$out= "<div class=\"module\">\n";
-	if ( $title )
-	{
-		$out.= '<h3>' . $title . "</h3>\n";
-	}
+	$out= '<div';
+	if ( !empty( $divclass ) ) $out.= ' class="'. $divclass .'"';
+	if ( !empty( $divid ) ) $out.= ' id="'. $divid .'"';
+	$out.= ">\n";
+	if ( $title ) $out.= '<h3>' . $title . "</h3>\n";
 	$out.="<ul>\n";
 	if ( $randomize ) shuffle( $links );
 	foreach( $links as $link )
