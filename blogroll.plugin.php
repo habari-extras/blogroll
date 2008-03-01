@@ -44,7 +44,7 @@ Class BlogRoll extends Plugin
 	}
 	
 	public function saved_config( $form )
-	{  
+	{   
 		return true;
 	}
 	
@@ -74,7 +74,8 @@ Class BlogRoll extends Plugin
 	$out.="<ul>\n";
 	if ( $randomize ) shuffle( $links );
 	foreach( $links as $link )
-	{
+	{	
+		$link=strip_tags($link);
 		$pair= explode( '|', $link );
 		$out.= '<li><a href="' . $pair[1] . '" title="Link to ' . $pair[0] . '">' . $pair[0] . "</a></li>\n";
 			if ( $max <= 1 ) break;
