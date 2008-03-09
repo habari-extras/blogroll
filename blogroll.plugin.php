@@ -33,11 +33,9 @@ Class BlogRoll extends Plugin
 		if ( $this->plugin_id()==$plugin_id && $action=='Configure' ){
 			$form= new FormUI( strtolower(get_class( $this ) ) );
 			$title= $form->add('text','title','List title: ','Blogroll');
-			$links= $form->add('textmulti','links','Links list: (use <i>name</i>|<i>url</i> format)');
+			$links= $form->add('textmulti','links','Links list: (use <i>name</i>|<i>url</i>|<i>rel(optional)</i> format)');
 			$max= $form->add('text','max','Max. displayed links: ','6');
 			$random=$form->add('checkbox','random','Randomize links ',false);
-			$divclass= $form->add('text','divclass','&lt;div&gt; element class: ','module');
-			$divid= $form->add('text','divid','&lt;div&gt; element id: ');
 			$form->on_success( array( $this, 'saved_config' ) );
 			$form->out();
 			}
@@ -50,7 +48,7 @@ Class BlogRoll extends Plugin
 	
 	public function theme_sidebar( $theme )
 	{
-		return $this->generate_blogroll();
+		echo $this->generate_blogroll();
 	}
 	
 	private function generate_blogroll()
@@ -60,26 +58,34 @@ Class BlogRoll extends Plugin
 	$links= Options::get( strtolower( get_class( $this ) ) . ':links' );
 	$max= Options::get( strtolower( get_class( $this ) ) . ':max');
 	$randomize= Options::get( strtolower( get_class ( $this ) ) . ':random' );
-	$divclass= Options::get( strtolower( get_class ( $this ) ) . ':divclass' );
-	$divid= Options::get( strtolower( get_class ( $this ) ) . ':divid' );
 	
 	//set default values if options not set
 	if ( empty( $max ) ) $max= 6;
-	if ( empty( $random ) ) $random= false;
-	$out= '<div';
-	if ( !empty( $divclass ) ) $out.= ' class="'. $divclass .'"';
-	if ( !empty( $divid ) ) $out.= ' id="'. $divid .'"';
-	$out.= ">\n";
-	if ( $title ) $out.= '<h3>' . $title . "</h3>\n";
+	if ( empty( $random ) ) $random= false ;
+	$out= '<div id="' . strtolower( get_class( $this ) ) . '">' . "\n" ;
+	if (!isset($title)) $title='Blogroll';
+		if (!empty ($title))
+		{
+			$out.= "<h2>" . $title . "</h2>\n";
+		}
 	$out.="<ul>\n";
 	if ( $randomize ) shuffle( $links );
 	foreach( $links as $link )
 	{	
+		$rel='';
 		$link=strip_tags($link);
-		$pair= explode( '|', $link );
-		$out.= '<li><a href="' . $pair[1] . '" title="Link to ' . $pair[0] . '">' . $pair[0] . "</a></li>\n";
+		$props= explode( '|', $link );
+		if ( sizeof( $props ) > 2 )
+		{
+			$rel= '" rel="' . $props[2];
+		}
+		$out.= '<li><a href="' . $props[1] . '" title="Link to ' . $props[0] . $rel . '">' . $props[0] . "</a></li>\n";
+
+		if ( $max != 0 )
+		{
 			if ( $max <= 1 ) break;
 			$max--;
+		}
 	}
 	$out.= "</ul>\n</div>";
 	return $out;
