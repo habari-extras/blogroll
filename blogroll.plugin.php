@@ -1,4 +1,11 @@
 <?php
+/*
+ * Blogroll Plugin
+ * Usage: <?php $theme->show_blogroll(); ?> 
+ * A sample blogroll.php template is included with the plugin.  This can be copied to your 
+ * active theme and modified to fit your preference.
+ */
+
 Class BlogRoll extends Plugin
 {		
 	public function info()
@@ -46,49 +53,45 @@ Class BlogRoll extends Plugin
 		return true;
 	}
 	
-	public function theme_sidebar( $theme )
+	public function theme_show_blogroll( $theme )
 	{
-		echo $this->generate_blogroll();
+		//read plugin options
+		$theme->blogroll_title= Options::get( strtolower( get_class( $this ) ) . ':title' );
+		$links= Options::get( strtolower( get_class( $this ) ) . ':links' );
+		$max= Options::get( strtolower( get_class( $this ) ) . ':max');
+		$randomize= Options::get( strtolower( get_class ( $this ) ) . ':random' );
+		
+		//set default values if options not set
+		if ( empty( $max ) ) $max= 6;
+		if ( empty( $random ) ) $random= false ;
+		if (!isset($theme->blogroll_title)) $theme->blogroll_title='Blogroll';
+		
+		if ( $randomize ) shuffle( $links );
+		
+		$blogroll_links= array();
+		
+		foreach( $links as $link )
+		{	
+			$link= strip_tags($link);
+			$props= explode( '|', $link );
+			if ( !isset( $props[2] ) ) {
+				$props[2]= '';
+			}
+			
+			$blogroll_links[]= array( 'title'=>"{$props[0]}", 'url'=>"{$props[1]}", 'rel'=>"{$props[2]}" );
+			if ( $max != 0 ) {
+				if ( $max <= 1 ) break;
+				$max--;
+			}
+		}
+		$theme->blogroll_links= $blogroll_links;
+		return $theme->fetch( 'blogroll' );
+		
 	}
 	
-	private function generate_blogroll()
+	public function action_init()
 	{
-	//read plugin options
-	$title= Options::get( strtolower( get_class( $this ) ) . ':title' );
-	$links= Options::get( strtolower( get_class( $this ) ) . ':links' );
-	$max= Options::get( strtolower( get_class( $this ) ) . ':max');
-	$randomize= Options::get( strtolower( get_class ( $this ) ) . ':random' );
-	
-	//set default values if options not set
-	if ( empty( $max ) ) $max= 6;
-	if ( empty( $random ) ) $random= false ;
-	$out= '<div id="' . strtolower( get_class( $this ) ) . '">' . "\n" ;
-	if (!isset($title)) $title='Blogroll';
-		if (!empty ($title))
-		{
-			$out.= "<h2>" . $title . "</h2>\n";
-		}
-	$out.="<ul>\n";
-	if ( $randomize ) shuffle( $links );
-	foreach( $links as $link )
-	{	
-		$rel='';
-		$link=strip_tags($link);
-		$props= explode( '|', $link );
-		if ( sizeof( $props ) > 2 )
-		{
-			$rel= '" rel="' . $props[2];
-		}
-		$out.= '<li><a href="' . $props[1] . '" title="Link to ' . $props[0] . $rel . '">' . $props[0] . "</a></li>\n";
-
-		if ( $max != 0 )
-		{
-			if ( $max <= 1 ) break;
-			$max--;
-		}
-	}
-	$out.= "</ul>\n</div>";
-	return $out;
+		$this->add_template('blogroll', dirname(__FILE__) . '\blogroll.php');
 	}
 }
 ?>
