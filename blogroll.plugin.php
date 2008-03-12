@@ -91,7 +91,7 @@ Class BlogRoll extends Plugin
 	
 	public function action_init()
 	{
-		$this->add_template('blogroll', dirname(__FILE__) . '\blogroll.php');
+		$this->add_template('blogroll', dirname(__FILE__) . '/blogroll.php');
 	}
 }
 ?>
