@@ -1,0 +1,38 @@
+.publish .container {
+	width: 790px;
+	}
+
+.publish .styledformelement {
+	font-family: 'HelveticaNeue-Light', 'Helvetica Neue', Helvetica, Arial, Sans-Serif;
+	padding: 3px 5px;
+	width: 758px; /* 100% will break the vertical lines */
+	}
+.span-10 .styledformelement {
+	width: 360px;
+	}
+.span-9 .styledformelement {
+	width: 360px;
+	}
+
+.splitter input#feed {
+	width: 758px;
+	}
+
+.publish .islabeled {
+	text-transform: lowercase;
+	color: #aeaeae;
+	}
+
+.publish .styledformelement {
+	font-size: 1.7em;
+	}
+
+.publish .styledformelement:focus {
+	color: #222;
+	}
+
+.publish #description {
+	padding: 5px;
+	height: 330px;
+	font-size: 14px;
+	}
