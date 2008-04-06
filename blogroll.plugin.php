@@ -27,10 +27,9 @@ class Blogroll extends Plugin
 	
 	public function action_plugin_activation( $file )
 	{
-		if ( $file == $this->get_file() ) {
+		if ( $file == str_replace('\\','/', $this->get_file() ) ) {
 			DB::register_table( 'blogroll' );
 			DB::register_table( 'bloginfo' );
-			
 			if ( ! CronTab::get_cronjob( 'blogroll:update' ) ) {
 				$paramarray = array(
 					'name' => 'blogroll:update',
