@@ -15,13 +15,13 @@ class Blogroll extends Plugin
 	public function info()
 	{
 		return array(
-		'name'=>'Blogroll',
-		'version'=>'0.3',
-		'url'=>'http://wiki.habariproject.org/en/plugins/blogroll',
-		'author'=>'Habari Community',
-		'authorurl'=>'http://habariproject.org/',
-		'license'=>'Apache License 2.0',
-		'description'=>'Displays a blogroll on your blog'
+		'name' => 'Blogroll',
+		'version' => '0.3',
+		'url' => 'http://wiki.habariproject.org/en/plugins/blogroll',
+		'author' => 'Habari Community',
+		'authorurl' => 'http://habariproject.org/',
+		'license' => 'Apache License 2.0',
+		'description' => 'Displays a blogroll on your blog'
 		);
 	}
 	
@@ -229,24 +229,30 @@ class Blogroll extends Plugin
 	
 	public function filter_blogroll_update_cron( $success )
 	{
-		$request= new RemoteRequest( 'http://www.weblogs.com/rssUpdates/changes.xml', 'GET' );
-		$request->add_header( array( 'If-Modified-Since', Options::get('blogroll:last_update') ) );
-		if ( $request->execute() ) {
-			$xml= new SimpleXMLElement( $request->get_response_body() );
-			$atts= $xml->attributes();
-			$updated= strtotime( (string) $atts['updated'] );
-			foreach ( $xml->weblog as $weblog ) {
-				$atts= $weblog->attributes();
-				$match= array();
-				$match['url']= (string) $atts['url'];
-				$match['feed']= (string) $atts['rssUrl'];
-				$update= $updated - (int) $atts['when'];
-				if ( DB::exists( DB::table( 'blogroll' ), $match ) ) {
-					DB::update( DB::table( 'blogroll' ), array( 'updated' => $update ), $match );
+		if ( Options::get( 'blogroll:use_updated' ) ) {
+			$request= new RemoteRequest( 'http://www.weblogs.com/rssUpdates/changes.xml', 'GET' );
+			$request->add_header( array( 'If-Modified-Since', Options::get('blogroll:last_update') ) );
+			if ( $request->execute() ) {
+				$xml= new SimpleXMLElement( $request->get_response_body() );
+				$atts= $xml->attributes();
+				$updated= strtotime( (string) $atts['updated'] );
+				foreach ( $xml->weblog as $weblog ) {
+					$atts= $weblog->attributes();
+					$match= array();
+					$match['url']= (string) $atts['url'];
+					$match['feed']= (string) $atts['rssUrl'];
+					$update= $updated - (int) $atts['when'];
+					if ( DB::exists( DB::table( 'blogroll' ), $match ) ) {
+						DB::update( DB::table( 'blogroll' ), array( 'updated' => $update ), $match );
+					}
 				}
+				Options::set( 'blogroll:last_update', gmdate( 'D, d M Y G:i:s e' ) );
 			}
+			return true;
 		}
-		return true;
+		else {
+			return false;
+		}
 	}
 }
 ?>
