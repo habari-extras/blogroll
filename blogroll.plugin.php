@@ -30,6 +30,17 @@ class Blogroll extends Plugin
 		if ( $file == $this->get_file() ) {
 			DB::register_table( 'blogroll' );
 			DB::register_table( 'bloginfo' );
+			
+			if ( ! CronTab::get_cronjob( 'blogroll:update' ) ) {
+				$paramarray = array(
+					'name' => 'blogroll:update',
+					'callback' => 'blogroll_update_cron',
+					'increment' => 1800, // one half hour
+					'description' => 'Updates the blog updated timestamp from weblogs.com'
+				);
+				CronTab::add_cron( $paramarray );
+			}
+			
 			Options::set( 'blogroll:use_updated', true );
 			Options::set( 'blogroll:max_links', '10' );
 			Options::set( 'blogroll:sort_by', 'updated' );
@@ -214,6 +225,28 @@ class Blogroll extends Plugin
 		
 		return $theme->fetch( 'blogroll' );
 		
+	}
+	
+	public function filter_blogroll_update_cron( $success )
+	{
+		$request= new RemoteRequest( 'http://www.weblogs.com/rssUpdates/changes.xml', 'GET' );
+		$request->add_header( array( 'If-Modified-Since', Options::get('blogroll:last_update') ) );
+		if ( $request->execute() ) {
+			$xml= new SimpleXMLElement( $request->get_response_body() );
+			$atts= $xml->attributes();
+			$updated= strtotime( (string) $atts['updated'] );
+			foreach ( $xml->weblog as $weblog ) {
+				$atts= $weblog->attributes();
+				$match= array();
+				$match['url']= (string) $atts['url'];
+				$match['feed']= (string) $atts['rssUrl'];
+				$update= $updated - (int) $atts['when'];
+				if ( DB::exists( DB::table( 'blogroll' ), $match ) ) {
+					DB::update( DB::table( 'blogroll' ), array( 'updated' => $update ), $match );
+				}
+			}
+		}
+		return true;
 	}
 }
 ?>
