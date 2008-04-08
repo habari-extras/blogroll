@@ -27,9 +27,10 @@ class Blogroll extends Plugin
 	
 	public function action_plugin_activation( $file )
 	{
-		if ( $file == str_replace('\\','/', $this->get_file() ) ) {
+		if ( $file == str_replace( '\\','/', $this->get_file() ) ) {
 			DB::register_table( 'blogroll' );
 			DB::register_table( 'bloginfo' );
+			
 			if ( ! CronTab::get_cronjob( 'blogroll:update' ) ) {
 				$paramarray = array(
 					'name' => 'blogroll:update',
@@ -90,21 +91,25 @@ class Blogroll extends Plugin
 	{
 		
 		if ( $this->plugin_id() == $plugin_id ){
-			$actions[]= 'Configure';		
+			$actions[]= _t( 'Configure', 'blogroll' );
 		}
 		return $actions;
 	}
 	
 	public function action_plugin_ui( $plugin_id, $action )
 	{
-		if ( $this->plugin_id()==$plugin_id && $action=='Configure' ){
-			$form= new FormUI( 'blogroll' );
-			$title= $form->add( 'text', 'list_title', 'List title: ' );
-			$max= $form->add( 'text', 'max_links', 'Max. displayed links: ' );
-			$random= $form->add( 'text', 'sort_by', 'Randomize links ' );
-			$update= $form->add( 'checkbox', 'use_update', 'Use Pingomatic to get updates? ' );
-			$form->out();
+		if ( $this->plugin_id()==$plugin_id ) {
+			switch ( $action ) {
+				case _t( 'Configure', 'blogroll' ):
+					$form= new FormUI( 'blogroll' );
+					$title= $form->add( 'text', 'list_title', _t( 'List title: ', 'blogroll' ) );
+					$max= $form->add( 'text', 'max_links', _t( 'Max. displayed links: ', 'blogroll') );
+					$random= $form->add( 'text', 'sort_by', _t( 'Randomize links ', 'blogroll') );
+					$update= $form->add( 'checkbox', 'use_update', _t( 'Use Weblogs.com to get updates? ', 'blogroll') );
+					$form->out();
+					break;
 			}
+		}
 	}
 	
 	public function filter_adminhandler_post_loadplugins_main_menu( $menu )
@@ -117,15 +122,58 @@ class Blogroll extends Plugin
 	public function action_admin_theme_post_blogroll( $handler, $theme )
 	{
 		$params= array_intersect_key( $handler->handler_vars, array_flip( array('name', 'url', 'feed', 'description', 'owner') ) );
-		if ( isset( $handler->handler_vars['change'] ) && $handler->handler_vars['change'] == 'delete' && isset( $handler->handler_vars['blog_ids'] ) ) {
-			foreach ( (array) $handler->handler_vars['blog_ids'] as $blog_id ) {
-				$blog= Blog::get( $blog_id );
-				$blog->delete();
-			}
+		
+		if ( isset( $handler->handler_vars['change'] ) && isset( $handler->handler_vars['blog_ids'] ) ) {
+			$action= $handler->handler_vars['change'];
 			$count= count($handler->handler_vars['blog_ids']);
-			Session::notice( _n( sprintf('Deleted %d blog',$count), sprintf('Deleted %d blogs',$count), $count ) );
+			$blog_ids= (array) $handler->handler_vars['blog_ids'];
+			
+			switch ( $action ) {
+				case 'delete':
+					foreach ( $blog_ids as $blog_id ) {
+						$blog= Blog::get( $blog_id );
+						$blog->delete();
+					}
+					Session::notice( sprintf( _n('Deleted %d blog', 'Deleted %d blogs', $count, 'blogroll'), $count ) );
+					break;
+				case 'auto_update':
+					foreach ( $blog_ids as $blog_id ) {
+						$blog= Blog::get( $blog_id );
+						if ( $info= Blog::get_info_from_url( $blog->feed?$blog->feed:$blog->url ) ) {
+							foreach ( $info as $key => $value ) {
+								$blog->$key= $value;
+							}
+							$blog->update();
+						}
+						else {
+							Session::error( sprintf( _t('Could not fetch info for %s', 'blogroll'), $blog->name ) );
+							$count--;
+						}
+					}
+					Session::notice( sprintf( _n('Automatically updated %d blog', 'Automatically updated %d blogs', $count, 'blogroll'), $count ) );
+					break;
+			}
+			
+			Utils::redirect( URL::get( 'admin', 'page=blogroll' ) );
+			exit;
 		}
-		elseif ( isset( $handler->handler_vars['id'] ) ) {
+		
+		if ( isset( $handler->handler_vars['quick_link'] ) && $handler->handler_vars['quick_link'] ) {
+			$link= $handler->handler_vars['quick_link'];
+			if ( $link && strpos( 'http://', $link ) !== 0 ) {
+				$link= 'http://' . $link;
+			}
+			if ( $info= Blog::get_info_from_url( $link ) ) {
+				$params= $info;
+			}
+			else {
+				Session::error( sprintf( _t('Could not fetch info from %s. Please enter the information manually.', 'blogroll'), $link ) );
+				Utils::redirect( URL::get( 'admin', 'page=blogroll&add' ) );
+				exit;
+			}
+		}
+		
+		if ( isset( $handler->handler_vars['id'] ) ) {
 			$blog= Blog::get( $handler->handler_vars['id'] );
 			$blog->name= $params['name'];
 			$blog->url= $params['url'];
@@ -133,64 +181,38 @@ class Blogroll extends Plugin
 			$blog->owner= $params['owner'];
 			$blog->description= $params['description'];
 			$blog->update();
-			Session::notice( _t( 'Updated blog ' . $blog->name ) );
+			Session::notice( sprintf( _t('Updated blog %s'), $blog->name ) );
 		}
-		else {
+		elseif ( $params ) {
 			$blog= new Blog( $params );
 			if ( $blog->insert() ) {
-				Session::notice( _t( 'Successfully added blog ' . $blog->name ) );
-				if ( isset( $handler->handler_vars['auto_update'] ) ) {
-					try {
-						$blog->update_from_url();
-						Session::notice( sprintf( _t('Automatically updated info for %s (%s)'), $blog->name, $blog->url ) );
-					}
-					catch ( Exception $e ) {
-						Session::error( _t( 'Could not fetch info from ' . $blog->url . '. Please add the information below.' ) );
-						Session::error( $e->getMessage() );
-						Utils::redirect( URL::get( 'admin', 'page=blogroll&id=' . $blog->id ) );
-						return;
-					}
-				}
+				Session::notice( sprintf( _t('Successfully added blog %s'), $blog->name ) );
+				
 			}
 			else {
-				Session::notice( _t( 'Could not add blog ' . $blog->name ) );
+				Session::notice( sprintf( _t( 'Could not add blog %s'), $blog->name ) );
 			}
 		}
 		Utils::redirect( URL::get( 'admin', 'page=blogroll' ) );
+		exit;
 	}
 	
 	public function action_admin_theme_get_blogroll( $handler, $theme )
 	{
 		Stack::add( 'admin_stylesheet', array( $this->get_url() . '/templates/blogroll.css', 'screen' ) );
+		$theme->feed_icon= $this->get_url() . '/templates/feed.png';
 		if ( isset( $handler->handler_vars['id'] ) ) {
 			$blog= Blog::get( $handler->handler_vars['id'] );
-			if ( isset( $handler->handler_vars['auto_update'] ) ) {
-				try {
-					$blog->update_from_url();
-					Session::notice( sprintf( _t('Automatically updated info for %s (%s)'), $blog->name, $blog->url ) );
-				}
-				catch ( Exception $e ) {
-					Session::error( _t( 'Could not fetch info from ' . $blog->url ) );
-				}
-			}
-			else {
-				$theme->id= $blog->id;
-				$theme->name= $blog->name;
-				$theme->url= $blog->url;
-				$theme->feed= $blog->feed;
-				$theme->owner= $blog->owner;
-				$theme->description= $blog->description;
-				$theme->display( 'blogroll_admin_edit' );
-				return;
-			}
+			$theme->id= $blog->id;
+			$theme->name= $blog->name;
+			$theme->url= $blog->url;
+			$theme->feed= $blog->feed;
+			$theme->owner= $blog->owner;
+			$theme->description= $blog->description;
+			$theme->display( 'blogroll_admin_edit' );
+			return;
 		}
 		elseif ( isset( $handler->handler_vars['add'] ) ) {
-			$theme->id= '';
-			$theme->name= '';
-			$theme->url= '';
-			$theme->feed= '';
-			$theme->owner= '';
-			$theme->description= '';
 			$theme->display( 'blogroll_admin_edit' );
 			return;
 		}

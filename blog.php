@@ -73,45 +73,54 @@ class Blog extends QueryRecord
 		return $this->info;
 	}
 	
-	public function update_from_url()
+	public static function get_info_from_url( $url )
 	{
-		if ( ! $this->feed && $this->url ) {
-			$html= RemoteRequest::get_contents( $this->url );
-			$this->feed= $this->get_feed_location( $html );
+		$info= array();
+		$data= RemoteRequest::get_contents( $url );
+		$feed= Blog::get_feed_location( $data, $url );
+		
+		if ( $feed ) {
+			$info['feed']= $feed;
+			$data= RemoteRequest::get_contents( $feed );
 		}
-		if ( $this->feed ) {
-			$xml= new SimpleXMLElement( RemoteRequest::get_contents( $this->feed ) );
+		else {
+			$info['feed']= $url;
+		}
+		// try and parse the xml
+		try {
+			$xml= new SimpleXMLElement( $data );
 			switch ( $xml->getName() ) {
 				case 'RDF':
 				case 'rss':
-					$this->name= (string) $xml->channel->title;
-					$this->url= (string) $xml->channel->link;
-					$this->description= (string) $xml->channel->description;
+					$info['name']= (string) $xml->channel->title;
+					$info['url']= (string) $xml->channel->link;
+					$info['description']= (string) $xml->channel->description;
 					break;
 				case 'feed':
-					$this->name= (string) $xml->title;
-					$this->description= (string) $xml->subtitle;
+					$info['name']= (string) $xml->title;
+					$info['description']= (string) $xml->subtitle;
 					foreach ( $xml->link as $link ) {
 						$atts= $link->attributes();
 						if ( $atts['rel'] == 'alternate' ) {
-							$this->url= (string) $atts['href'];
+							$info['url']= (string) $atts['href'];
 							break;
 						}
 					}
 					break;
 			}
-			$this->update();
 		}
-		else {
-			throw new Exception( _t( 'Could not find a feed for that blog', 'blogroll' ) );
+		catch ( Exception $e ) {
+			return array();
 		}
+		return $info;
 	}
 	
-	private function get_feed_location( $html )
+	public static function get_feed_location( $html, $url )
 	{
 		preg_match_all( '/<link\s+(.*?)\s*\/?>/si', $html, $matches );
 		$links= $matches[1];
 		$final_links= array();
+		$href= '';
 		$link_count= count( $links );
 		for( $n= 0; $n < $link_count; $n++ ) {
 			$attributes= preg_split('/\s+/s', $links[$n]);
@@ -125,11 +134,8 @@ class Blog extends QueryRecord
 			$final_links[$n]= $final_link;
 		}
 		for ( $n= 0; $n < $link_count; $n++ ) {
-			if ( strtolower( $final_links[$n]['rel'] ) == 'alternate' ) {
-				if ( strtolower( $final_links[$n]['type'] ) == 'application/rss+xml' ) {
-					$href= $final_links[$n]['href'];
-				}
-				if ( !$href && strtolower( $final_links[$n]['type'] ) == 'text/xml' ) {
+			if ( isset($final_links[$n]['rel']) && strtolower( $final_links[$n]['rel'] ) == 'alternate' ) {
+				if ( isset($final_links[$n]['type']) && in_array( strtolower( $final_links[$n]['type'] ), array( 'application/rss+xml', 'application/atom+xml', 'text/xml' ) ) ) {
 					$href= $final_links[$n]['href'];
 				}
 				if ( $href ) {
@@ -137,7 +143,7 @@ class Blog extends QueryRecord
 						$full_url= $href;
 					}
 					else {
-						$url_parts= parse_url( $this->url );
+						$url_parts= parse_url( $url );
 						$full_url= "http://$url_parts[host]";
 						if ( isset( $url_parts['port'] ) ) {
 							$full_url.= ":$url_parts[port]";
