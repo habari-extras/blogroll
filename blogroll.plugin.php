@@ -257,7 +257,7 @@ class Blogroll extends Plugin
 	
 	public function theme_show_blogroll( $theme )
 	{
-		$theme->blogroll_title= Options::get( 'blogroll:title' );
+		$theme->blogroll_title= Options::get( 'blogroll:list_title' );
 		$theme->blogs= Blogs::get();
 		
 		return $theme->fetch( 'blogroll' );
