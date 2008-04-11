@@ -4,6 +4,9 @@
  * Usage: <?php $theme->show_blogroll(); ?> 
  * A sample blogroll.php template is included with the plugin.  This can be copied to your 
  * active theme and modified to fit your preference.
+ *
+ * @todo add plugin filters for insert/update etc...
+ * @todo use page splitter and plugin filter for additional feilds
  */
 
 require_once "blogs.php";
@@ -46,8 +49,20 @@ class Blogroll extends Plugin
 			Options::set( 'blogroll:sort_by', 'updated' );
 			Options::set( 'blogroll:list_title', 'Blogroll' );
 			
-			$table= DB::dbdelta(
-				"CREATE TABLE " . DB::table('blogroll') . " (
+			if ( $this->install_db_tables() ) {
+				Session::notice( _t( 'Created the Blogroll database tables.', 'blogroll' ) );
+			}
+			else {
+				Session::error( _t( 'Could not install Blogroll database tables.', 'blogroll' ) );
+			}
+		}
+	}
+	
+	public function install_db_tables()
+	{
+		switch ( DB::get_driver_name() ) {
+			case 'mysql':
+				$schema= "CREATE TABLE " . DB::table('blogroll') . " (
 				id INT UNSIGNED NOT NULL AUTO_INCREMENT,
 				name VARCHAR(255) NOT NULL,
 				url VARCHAR(255) NOT NULL,
@@ -56,24 +71,20 @@ class Blogroll extends Plugin
 				updated VARCHAR(12) NOT NULL,
 				description TEXT,
 				UNIQUE KEY id (id)
-				);"
-			);
-			$info= DB::dbdelta(
-				"CREATE TABLE " . DB::table('bloginfo') . " (
+				);
+				CREATE TABLE " . DB::table('bloginfo') . " (
 				blog_id INT UNSIGNED NOT NULL,
 				name VARCHAR(255) NOT NULL,
 				type SMALLINT UNSIGNED NOT NULL DEFAULT 0,
 				value TEXT,
 				PRIMARY KEY (blog_id,name)
-				);"
-			);
-			if ( $table && $info ) {
-				Session::notice( _t( 'Created the Blogroll database tables.', 'blogroll' ) );
-			}
-			else {
-				Session::error( _t( 'Could not install Blogroll database tables.', 'blogroll' ) );
-			}
+				);";
+				break;
+			case 'sqlite':
+				$schema= "";
+				break;
 		}
+		return DB::dbdelta( $schema );
 	}
 	
   	public function action_update_check()
@@ -160,26 +171,34 @@ class Blogroll extends Plugin
 		
 		if ( isset( $handler->handler_vars['quick_link'] ) && $handler->handler_vars['quick_link'] ) {
 			$link= $handler->handler_vars['quick_link'];
-			if ( $link && strpos( 'http://', $link ) !== 0 ) {
+			if ( $link && strpos( $link, 'http://' ) !== 0 ) {
 				$link= 'http://' . $link;
 			}
 			if ( $info= Blog::get_info_from_url( $link ) ) {
 				$params= $info;
 			}
 			else {
+				$_POST['url']= $link;
+				$_POST['feed']= $link;
+				Session::add_to_set( 'last_form_data', $_POST, 'get' );
 				Session::error( sprintf( _t('Could not fetch info from %s. Please enter the information manually.', 'blogroll'), $link ) );
 				Utils::redirect( URL::get( 'admin', 'page=blogroll&add' ) );
 				exit;
 			}
 		}
 		
+		if ( $params && ( empty( $params['name'] ) || empty( $params['url'] ) ) ) {
+			Session::error( _t('Blog Name and URL are required feilds.', 'blogroll') );
+			Session::add_to_set( 'last_form_data', $_POST, 'get' );
+			Utils::redirect( URL::get( 'admin', 'page=blogroll&add' ) );
+			exit;
+		}
+		
 		if ( isset( $handler->handler_vars['id'] ) ) {
 			$blog= Blog::get( $handler->handler_vars['id'] );
-			$blog->name= $params['name'];
-			$blog->url= $params['url'];
-			$blog->feed= $params['feed'];
-			$blog->owner= $params['owner'];
-			$blog->description= $params['description'];
+			foreach ( $params as $key => $value ) {
+				$blog->$key= $value;
+			}
 			$blog->update();
 			Session::notice( sprintf( _t('Updated blog %s'), $blog->name ) );
 		}
@@ -203,12 +222,9 @@ class Blogroll extends Plugin
 		$theme->feed_icon= $this->get_url() . '/templates/feed.png';
 		if ( isset( $handler->handler_vars['id'] ) ) {
 			$blog= Blog::get( $handler->handler_vars['id'] );
-			$theme->id= $blog->id;
-			$theme->name= $blog->name;
-			$theme->url= $blog->url;
-			$theme->feed= $blog->feed;
-			$theme->owner= $blog->owner;
-			$theme->description= $blog->description;
+			foreach ( $blog->to_array() as $key => $value ) {
+				$theme->$key= $value;
+			}
 			$theme->display( 'blogroll_admin_edit' );
 			return;
 		}
