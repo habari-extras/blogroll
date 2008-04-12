@@ -1,7 +1,7 @@
 <?php
 
 /**
- * 
+ *
  *
  * @package blogroll
  */
@@ -9,6 +9,7 @@
 class Blog extends QueryRecord
 {
 	private $info= null;
+	private $tags= null;
 	
 	/**
 	 * Returns the defined database columns for a cronjob.
@@ -24,6 +25,7 @@ class Blog extends QueryRecord
 			'description' => '',
 			'owner' => '',
 			'updated' => '',
+			'rel' => 'external',
 		);
 	}
 
@@ -41,6 +43,10 @@ class Blog extends QueryRecord
 		);
 		
 		parent::__construct( $paramarray );
+		if ( isset( $this->fields['tags'] ) ) {
+			$this->tags= $this->parsetags( $this->fields['tags'] );
+			unset( $this->fields['tags'] );
+		}
 		$this->exclude_fields('id');
 		
 		$this->info= new BlogInfo ( $this->fields['id'] );
@@ -51,6 +57,61 @@ class Blog extends QueryRecord
 		return DB::get_row( "SELECT * FROM {blogroll} WHERE id = ?", array($id), 'Blog' );
 	}
 	
+	private static function parsetags( $tags )
+	{
+		if ( is_string( $tags ) ) {
+			if ( '' === $tags ) {
+				return array();
+			}
+			// dirrty ;)
+			$rez= array( '\\"'=>':__unlikely_quote__:', '\\\''=>':__unlikely_apos__:' );
+			$zer= array( ':__unlikely_quote__:'=>'"', ':__unlikely_apos__:'=>"'" );
+			// escape
+			$tagstr= str_replace( array_keys( $rez ), $rez, $tags );
+			// match-o-matic
+			preg_match_all( '/((("|((?<= )|^)\')\\S([^\\3]*?)\\3((?=[\\W])|$))|[^,])+/', $tagstr, $matches );
+			// cleanup
+			$tags= array_map( 'trim', $matches[0] );
+			$tags= preg_replace( array_fill( 0, count( $tags ), '/^(["\'])(((?!").)+)(\\1)$/'), '$2', $tags );
+			// unescape
+			$tags= str_replace( array_keys( $zer ), $zer, $tags );
+			// hooray
+			return $tags;
+		}
+		elseif ( is_array( $tags ) ) {
+			return $tags;
+		}
+	}
+
+	private function save_tags()
+	{
+		DB::query( 'DELETE FROM ' . DB::table( 'tag2blog' ) . ' WHERE blog_id = ?', array( $this->fields['id'] ) );
+		if ( count( $this->tags ) == 0 ) {
+			return;
+		}
+		foreach ( ( array ) $this->tags as $tag ) {
+			$tag_slug= Utils::slugify( $tag );
+			// @todo TODO Make this multi-SQL safe!
+			if ( DB::get_value( 'SELECT count(*) FROM ' . DB::table( 'tags' ) . ' WHERE tag_text = ?', array( $tag ) ) == 0 ) {
+				DB::query( 'INSERT INTO ' . DB::table( 'tags' ) . ' (tag_text, tag_slug) VALUES (?, ?)', array( $tag, $tag_slug ) );
+			}
+			DB::query( 'INSERT INTO ' . DB::table( 'tag2blog' ) . ' (tag_id, blog_id) SELECT id AS tag_id, ? AS blog_id FROM ' . DB::table( 'tags' ) . ' WHERE tag_text = ?',
+				array( $this->fields['id'], $tag )
+			);
+		}
+	}
+	
+	public function __set( $name, $value )
+	{
+		switch( $name ) {
+			case 'tags':
+				$this->tags= $this->parsetags( $value );
+				return $this->get_tags();
+		}
+		return parent::__set( $name, $value );
+	}
+	
+	
 	public function __get( $name )
 	{
 		switch($name)
@@ -58,11 +119,37 @@ class Blog extends QueryRecord
 			case 'info':
 				$out = $this->get_info();
 				break;
+			case 'tags':
+				$out= $this->get_tags();
+				break;
 			default:
 				$out = parent::__get( $name );
 				break;
 		}
 		return $out;
+	}
+	
+	private function get_tags()
+	{
+		if ( empty( $this->tags ) ) {
+			$sql= "
+				SELECT t.tag_text, t.tag_slug
+				FROM " . DB::table( 'tags' ) . " t
+				INNER JOIN " . DB::table( 'tag2blog' ) . " t2b
+				ON t.id = t2b.tag_id
+				WHERE t2b.blog_id = ?
+				ORDER BY t.tag_slug ASC";
+			$result= DB::get_results( $sql, array( $this->fields['id'] ) );
+			if ( $result ) {
+				foreach ( $result as $t ) {
+					$this->tags[$t->tag_slug]= $t->tag_text;
+				}
+			}
+		}
+		if ( count( $this->tags ) == 0 ) {
+			return array();
+		}
+		return $this->tags;
 	}
 	
 	private function get_info()
@@ -72,107 +159,22 @@ class Blog extends QueryRecord
 		}
 		return $this->info;
 	}
-	
-	public static function get_info_from_url( $url )
-	{
-		$info= array();
-		$data= RemoteRequest::get_contents( $url );
-		$feed= Blog::get_feed_location( $data, $url );
-		
-		if ( $feed ) {
-			$info['feed']= $feed;
-			$data= RemoteRequest::get_contents( $feed );
-		}
-		else {
-			$info['feed']= $url;
-		}
-		// try and parse the xml
-		try {
-			$xml= new SimpleXMLElement( $data );
-			switch ( $xml->getName() ) {
-				case 'RDF':
-				case 'rss':
-					$info['name']= (string) $xml->channel->title;
-					$info['url']= (string) $xml->channel->link;
-					$info['description']= (string) $xml->channel->description;
-					break;
-				case 'feed':
-					$info['name']= (string) $xml->title;
-					$info['description']= (string) $xml->subtitle;
-					foreach ( $xml->link as $link ) {
-						$atts= $link->attributes();
-						if ( $atts['rel'] == 'alternate' ) {
-							$info['url']= (string) $atts['href'];
-							break;
-						}
-					}
-					break;
-			}
-		}
-		catch ( Exception $e ) {
-			return array();
-		}
-		return $info;
-	}
-	
-	public static function get_feed_location( $html, $url )
-	{
-		preg_match_all( '/<link\s+(.*?)\s*\/?>/si', $html, $matches );
-		$links= $matches[1];
-		$final_links= array();
-		$href= '';
-		$link_count= count( $links );
-		for( $n= 0; $n < $link_count; $n++ ) {
-			$attributes= preg_split('/\s+/s', $links[$n]);
-			foreach ( $attributes as $attribute ) {
-				$att= preg_split( '/\s*=\s*/s', $attribute, 2 );
-				if ( isset( $att[1] ) ) {
-					$att[1]= preg_replace( '/([\'"]?)(.*)\1/', '$2', $att[1] );
-					$final_link[strtolower( $att[0] )]= $att[1];
-				}
-			}
-			$final_links[$n]= $final_link;
-		}
-		for ( $n= 0; $n < $link_count; $n++ ) {
-			if ( isset($final_links[$n]['rel']) && strtolower( $final_links[$n]['rel'] ) == 'alternate' ) {
-				if ( isset($final_links[$n]['type']) && in_array( strtolower( $final_links[$n]['type'] ), array( 'application/rss+xml', 'application/atom+xml', 'text/xml' ) ) ) {
-					$href= $final_links[$n]['href'];
-				}
-				if ( $href ) {
-					if ( strstr( $href, "http://" ) !== false ) {
-						$full_url= $href;
-					}
-					else {
-						$url_parts= parse_url( $url );
-						$full_url= "http://$url_parts[host]";
-						if ( isset( $url_parts['port'] ) ) {
-							$full_url.= ":$url_parts[port]";
-						}
-						if ( $href{0} != '/' ) {
-							$full_url.= dirname( $url_parts['path'] );
-							if ( substr( $full_url, -1 ) != '/' ) {
-								$full_url.= '/';
-							}
-						}
-						$full_url.= $href;
-					}
-					return $full_url;
-				}
-			}
-		}
-		return false;
-	}
 
 	/**
 	 * Saves a new cron job to the crontab table
 	 */
 	public function insert()
 	{
+		Plugins::act( 'blogroll_insert_before', $this );
+		
 		$result = parent::insertRecord( DB::table('blogroll') );
 		$this->newfields['id'] = DB::last_insert_id(); // Make sure the id is set in the comment object to match the row id
 		$this->fields = array_merge($this->fields, $this->newfields);
 		$this->newfields = array();
 		$this->info->commit( $this->fields['id'] );
+		$this->save_tags();
+		
+		Plugins::act( 'blogroll_insert_after', $this );
 		return $result;
 	}
 
@@ -181,10 +183,15 @@ class Blog extends QueryRecord
 	 */
 	public function update()
 	{
+		Plugins::act( 'blogroll_update_before', $this );
+		
 		$result = parent::updateRecord( DB::table('blogroll'), array('id'=>$this->id) );
 		$this->fields = array_merge($this->fields, $this->newfields);
 		$this->newfields = array();
+		$this->save_tags();
 		$this->info->commit();
+		
+		Plugins::act( 'blogroll_update_after', $this );
 		return $result;
 	}
 
@@ -193,7 +200,15 @@ class Blog extends QueryRecord
 	 */
 	public function delete()
 	{
-		return parent::deleteRecord( DB::table('blogroll'), array('id'=>$this->id) );
+		Plugins::act( 'blogroll_delete_before', $this );
+		
+		if ( isset( $this->info ) ) {
+			$this->info->delete_all();
+		}
+		$result= parent::deleteRecord( DB::table('blogroll'), array('id'=>$this->id) );
+		
+		Plugins::act( 'blogroll_delete_after', $this );
+		return $result;
 	}
 }
 

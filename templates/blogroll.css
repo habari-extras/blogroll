@@ -1,22 +1,15 @@
-.publish .container {
-	width: 790px;
-	}
-
 .publish .styledformelement {
 	font-family: 'HelveticaNeue-Light', 'Helvetica Neue', Helvetica, Arial, Sans-Serif;
 	padding: 3px 5px;
 	width: 758px; /* 100% will break the vertical lines */
 	}
-.span-10 .styledformelement {
-	width: 360px;
-	}
-.span-9 .styledformelement {
-	width: 360px;
+
+.splitter input#quick_link, .splitter input#userfile, .splitter input#opml_file {
+	width: 758px;
 	}
 
 .splitter input#quick_link {
-	width: 708px;
-	background: #fff url(feed.png) no-repeat 688px center;
+	background: #fff url(feed.png) no-repeat 728px center;
 	}
 
 .publish .islabeled {
@@ -34,6 +27,6 @@
 
 .publish #description {
 	padding: 5px;
-	height: 330px;
+	height: 150px;
 	font-size: 14px;
 	}
