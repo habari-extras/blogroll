@@ -6,20 +6,19 @@
  * active theme and modified to fit your preference.
  *
  * @todo OPML feed/export support via a BlogrollOPMLHandler and SimpleXMLElement
- * @todo Implement Blogs::get method to use params for sort/limit etc...
  * @todo sqlite schema
  * @todo Update wiki docs
  * @todo Make the delete and auto update buttons work on publish screen
  * @todo Provide check/uncheck all in manage screen
  * @todo Write a XFN/FOAF "plugin extension" to extend the blogroll ;)
  */
-
 require_once "blogs.php";
 require_once "bloginfo.php";
 require_once "blog.php";
 
 class Blogroll extends Plugin
-{		
+{	
+		
 	public function info()
 	{
 		return array(
@@ -46,8 +45,10 @@ class Blogroll extends Plugin
 			
 			Options::set( 'blogroll:use_updated', true );
 			Options::set( 'blogroll:max_links', '10' );
-			Options::set( 'blogroll:sort_by', 'updated' );
+			Options::set( 'blogroll:sort_by', '6' );
+			Options::set( 'blogroll:direction', '0' );
 			Options::set( 'blogroll:list_title', 'Blogroll' );
+			
 			
 			if ( $this->install_db_tables() ) {
 				Session::notice( _t( 'Created the Blogroll database tables.', 'blogroll' ) );
@@ -131,7 +132,8 @@ class Blogroll extends Plugin
 					$form= new FormUI( 'blogroll' );
 					$title= $form->add( 'text', 'list_title', _t( 'List title: ', 'blogroll' ) );
 					$max= $form->add( 'text', 'max_links', _t( 'Max. displayed links: ', 'blogroll') );
-					$random= $form->add( 'text', 'sort_by', _t( 'Sort By: ', 'blogroll') );
+					$sortby= $form->add( 'select', 'sort_by', _t( 'Sort By: ', 'blogroll'),array_merge(array_keys(Blog::default_fields() ), array('(Random)')) );
+					$order= $form->add( 'select', 'direction', _t( 'Order: ', 'blogroll'), array('Ascending', 'Descending') );
 					$update= $form->add( 'checkbox', 'use_update', _t( 'Use Weblogs.com to get updates? ', 'blogroll') );
 					$form->out();
 					break;
@@ -321,12 +323,19 @@ class Blogroll extends Plugin
 	public function theme_show_blogroll( $theme )
 	{
 		$theme->blogroll_title= Options::get( 'blogroll:list_title' );
-		// pass options here as params
+		
+		// Build the params array to pass it to the get() method
+		$fields= array_merge( array_keys(Blog::default_fields() ), array ('RAND()') );
+		$order_by= Options::get( 'blogroll:sort_by' );
+		$directions= array ('ASC','DESC'); //need a better place for this
+		$direction= Options::get( 'blogroll:direction');
+		
 		$params= array(
 			'limit' => Options::get( 'blogroll:max_links' ),
-			'order_by' => Options::get( 'blogroll:sort_by' ),
+			'order_by' => $fields[$order_by] . ' ' . $directions [$direction]
 			);
-		$theme->blogs= Blogs::get();
+			
+		$theme->blogs= Blogs::get($params);
 		
 		return $theme->fetch( 'blogroll' );
 		

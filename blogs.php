@@ -8,9 +8,46 @@
 
 class Blogs extends ArrayObject
 {
-	public function get()
-	{
-		$results= DB::get_results( 'SELECT * FROM {blogroll}', array(), 'Blog' );
+	public function get( $paramarray= array() )
+	{	
+		//convert to array if passed as a querystring	
+		$paramarray= Utils::get_params( $paramarray );
+				
+		$wheres= array();
+		$params= array();
+		$where='';
+		
+		foreach ($paramarray as $key=>$value){
+			if ($key != 'order_by' && $key != 'limit'){
+				if ( isset( $value ) && $value != 'any' ){
+					if ( is_array( $value ) ){
+						$wheres[]= $key.' IN(' . implode( ',',array_fill( 0, $count($value), '?' ) ) . ')';
+						$params[]= array_merge($params,$value);
+					}
+					else {
+						$wheres[]= $key.'='.$value;
+						$params[]= $value;
+					}
+				}
+			}
+		}
+		
+		extract($paramarray= Utils::get_params( $paramarray ));
+		
+		if ( isset( $order_by ) ){
+			$order_by='ORDER BY '.$order_by;
+		}
+		
+		if ( isset( $limit ) ){
+			$limit='LIMIT '.$limit;
+		}
+		
+		if ( !empty( $whers ) ){
+			$where='WHERE '. implode(' AND ',$wheres);
+		}
+		$query= "SELECT * FROM {blogroll} " . $where . ' ' . $order_by . ' ' . $limit;
+		$results= DB::get_results($query, $params, 'Blog');
+		
 		$c= __CLASS__;
 		return new $c( $results );
 	}
