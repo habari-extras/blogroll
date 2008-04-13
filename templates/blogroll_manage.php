@@ -16,7 +16,7 @@
 		
 		<div class="container pagesplitter">
 			<ul class="tabcontrol tabs">
-				<li class="import_opml_blogroll first"><a href="#import_opml_blogroll"><?php _e( 'Import/Export OPML', 'blogroll' ); ?></a></li><li class="bookmarklets_blogroll last"><a href="#bookmarklets_blogroll"><?php _e( 'Bookmarklets', 'blogroll' ); ?></a></li>
+				<li class="import_opml_blogroll first" ><a href="#import_opml_blogroll" style="width: 125px;"><?php _e( 'Import/Export OPML', 'blogroll' ); ?></a></li><li class="bookmarklets_blogroll last"><a href="#bookmarklets_blogroll"><?php _e( 'Bookmarklets', 'blogroll' ); ?></a></li>
 			</ul>
 			
 			<div id="import_opml_blogroll" class="splitter">
