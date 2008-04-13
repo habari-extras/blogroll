@@ -37,9 +37,15 @@ class Blogs extends ArrayObject
 		if ( isset( $order_by ) ){
 			$order_by='ORDER BY '.$order_by;
 		}
+		else {
+			$order_by='';
+		}
 		
 		if ( isset( $limit ) ){
 			$limit='LIMIT '.$limit;
+		}
+		else {
+			$limit='';
 		}
 		
 		if ( !empty( $whers ) ){
