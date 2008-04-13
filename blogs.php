@@ -12,7 +12,7 @@ class Blogs extends ArrayObject
 	{	
 		//convert to array if passed as a querystring	
 		$paramarray= Utils::get_params( $paramarray );
-				
+		
 		$wheres= array();
 		$params= array();
 		$where='';
@@ -35,7 +35,7 @@ class Blogs extends ArrayObject
 		extract($paramarray= Utils::get_params( $paramarray ));
 		
 		if ( isset( $order_by ) ){
-			$order_by='ORDER BY '.$order_by;
+			$order_by='ORDER BY ' . str_replace( 'random', 'RAND()', $order_by );
 		}
 		else {
 			$order_by='';
@@ -48,7 +48,7 @@ class Blogs extends ArrayObject
 			$limit='';
 		}
 		
-		if ( !empty( $whers ) ){
+		if ( !empty( $wheres ) ){
 			$where='WHERE '. implode(' AND ',$wheres);
 		}
 		$query= "SELECT * FROM {blogroll} " . $where . ' ' . $order_by . ' ' . $limit;
@@ -79,11 +79,11 @@ class Blogs extends ArrayObject
 				case 'rss':
 					$info['name']= (string) $xml->channel->title;
 					$info['url']= (string) $xml->channel->link;
-					$info['description']= (string) $xml->channel->description;
+					if ( (string) $xml->channel->description ) $info['description']= (string) $xml->channel->description;
 					break;
 				case 'feed':
 					$info['name']= (string) $xml->title;
-					$info['description']= (string) $xml->subtitle;
+					if ( (string) $xml->subtitle ) $info['description']= (string) $xml->subtitle;
 					foreach ( $xml->link as $link ) {
 						$atts= $link->attributes();
 						if ( $atts['rel'] == 'alternate' ) {

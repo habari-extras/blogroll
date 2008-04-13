@@ -114,6 +114,15 @@ class Blog extends QueryRecord
 	
 	public function __get( $name )
 	{
+		$fieldnames= array_merge( array_keys( $this->fields ), array( 'tags' ) );
+		if ( !in_array( $name, $fieldnames ) && strpos( $name, '_' ) !== false ) {
+			preg_match( '/^(.*)_([^_]+)$/', $name, $matches );
+			list( $junk, $name, $filter )= $matches;
+		}
+		else {
+			$filter= false;
+		}
+		
 		switch($name)
 		{
 			case 'info':
@@ -125,6 +134,10 @@ class Blog extends QueryRecord
 			default:
 				$out = parent::__get( $name );
 				break;
+		}
+		$out= Plugins::filter( "blog_{$name}", $out, $this );
+		if ( $filter ) {
+			$out= Plugins::filter( "blog_{$name}_{$filter}", $out, $this );
 		}
 		return $out;
 	}

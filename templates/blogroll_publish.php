@@ -83,21 +83,35 @@ EO_CONTROLS;
 			<div class="publish">
 			<div id="formbuttons" class="container">
 				<p class="column span-13" id="left_control_set">
-					<input type="submit" id="submit_options" name="submit_options" class="publish" value="<?php _e( 'Save', 'blogroll' ); ?>">
-					<?php if( !empty( $id ) ) : ?>
-					<input type="submit" name="auto_update" id="auto_update" value="<?php _e( 'Auto Update', 'blogroll' ); ?>">
-					<?php endif; ?>
+					<input type="submit" id="save" name="save" class="publish" value="<?php _e( 'Save', 'blogroll' ); ?>">
 				</p>
-				<p class="column span-3 last" id="right_control_set">
-					<?php if( !empty( $id ) ) : ?>
-					<input type="submit" name="delete" id="delete" class="delete" value="<?php _e( 'Delete', 'blogroll' ); ?>">
-					<?php endif; ?>
-				</p>
+				
+				<p class="column span-3 last" id="right_control_set"></p>
 			</div>
 			</div>
-			<div style="display:none" id="hidden">
+			<div id="hidden">
 				<?php if ( !empty($id) ) : ?><input type="hidden" id="id" name="id" value="<?php echo $id; ?>"><?php endif; ?>
 			</div>
-		</form>
+</form>
+
+<script type="text/javascript">
+$(document).ready(function(){
+	<?php if( !empty( $id ) ) : ?>
+	$('#left_control_set #save').attr('value', '<?php _e( 'Update', 'blogroll' ); ?>');
+	$('#left_control_set').append($('<input type="submit" name="auto_update" id="auto_update" value="<?php _e( 'Auto Update', 'blogroll' ); ?>">'));
+	$('#auto_update').click(function(){
+		$('#blogroll_publish')
+			.append($('<input type="hidden" name="quick_link" value="<?php echo $url; ?>">'))
+	});
+	$('#right_control_set').append($('<input type="submit" name="delete" id="delete" class="delete" value="<?php _e( 'Delete', 'blogroll' ); ?>">'));
+	$('#delete').click(function(){
+		$('#blogroll_publish')
+			.append($('<input type="hidden" name="change" value="delete"><input type="hidden" name="blog_ids[]" value="<?php echo $id; ?>">'))
+			.attr('action', '<?php URL::out( 'admin', 'page=blogroll_manage' ); ?>');
+	});
+	<?php endif; ?>
+});
+</script>
+
 	
 <?php include HABARI_PATH . '/system/admin/footer.php'; ?>
