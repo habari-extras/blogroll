@@ -47,8 +47,8 @@ class Blogroll extends Plugin
 			Options::set( 'blogroll:db_version', self::DB_VERSION );
 			Options::set( 'blogroll:use_updated', true );
 			Options::set( 'blogroll:max_links', '10' );
-			Options::set( 'blogroll:sort_by', '6' );
-			Options::set( 'blogroll:direction', '0' );
+			Options::set( 'blogroll:sort_by', 'id' );
+			Options::set( 'blogroll:direction', 'ASC' );
 			Options::set( 'blogroll:list_title', 'Blogroll' );
 			
 			if ( $this->install_db_tables() ) {
