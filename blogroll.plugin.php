@@ -468,7 +468,7 @@ class Blogroll extends Plugin
 					$valid_atts['url']= $atts['htmlUrl'];
 					break;
 				case 'xmlUrl':
-					$valid_atts['url']= $atts['xmlUrl'];
+					$valid_atts['feed']= $atts['xmlUrl'];
 					break;
 				case 'text':
 					$valid_atts['name']= $atts['text'];

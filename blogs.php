@@ -8,6 +8,17 @@
 
 class Blogs extends ArrayObject
 {
+	public function __get( $name )
+	{
+		switch( $name ) {
+			case 'oneblog':
+				return ( count( $this ) == 1 );
+			case 'count':
+				return count( $this );
+		}
+		return false;
+	}
+	
 	public function get( $paramarray= array() )
 	{	
 		//convert to array if passed as a querystring	
