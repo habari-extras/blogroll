@@ -115,6 +115,5 @@
 	
 	</form>
 	
-</div>
 
 <?php include HABARI_PATH . '/system/admin/footer.php'; ?>
