@@ -181,11 +181,11 @@ class Blogroll extends Plugin
 		}
 	}
 	
-	public function filter_adminhandler_post_loadplugins_main_menu( $menu )
+	public function filter_adminhandler_post_loadplugins_main_menu( $menus )
 	{
-		$menu['manage']['submenu']['blogroll']= array( 'caption' => _t( 'Blogroll', 'blogroll' ), 'url' => URL::get( 'admin', 'page=blogroll_manage' ) );
-		$menu['publish']['submenu']['blogroll']= array( 'caption' => _t( 'Blogroll', 'blogroll' ), 'url' => URL::get( 'admin', 'page=blogroll_publish' ) );
-		return $menu;
+		$menus['blogroll_manage'] =  array( 'url' => URL::get( 'admin', 'page=blogroll_manage'), 'title' => _t('Manage Blogroll'), 'text' => _t('Manage Blogroll'), 'selected' => false, 'hotkey' => 'B' );
+		$menus['blogroll_publish'] =  array( 'url' => URL::get( 'admin', 'page=blogroll_publish'), 'title' => _t('Publish Blogroll'), 'text' => _t('Publish Blogroll'), 'selected' => false );
+		return $menus;
 	}
 	
 	public function action_admin_theme_post_blogroll_manage( $handler, $theme )
