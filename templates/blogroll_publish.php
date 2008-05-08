@@ -1,10 +1,8 @@
 <?php include HABARI_PATH . '/system/admin/header.php'; ?>
 
-
-	<div class="container"><?php if(Session::has_messages()) {Session::messages_out();} ?></div>
 	
 		<form name="blogroll_quick_link" id="blogroll_quick_link" action="<?php URL::out('admin', 'page=blogroll_publish'); ?>" method="post">
-		<div class="container pagesplitter">
+		<div class="pagesplitter">
 			<ul class="tabcontrol tabs">
 				<li class="quick_link_blogroll first last"><a href="#quick_link_blogroll"><?php _e( 'Add Quick Link', 'blogroll' ); ?></a></li>
 			</ul>
@@ -14,7 +12,7 @@
 					<div class="container">
 						<p><?php _e( 'Enter the URL or feed URL, other information will be "auto-discovered".', 'blogroll' ); ?></p>
 						
-						<div class="container">
+						<div>
 							<p><label for="quick_link" class="incontent"><?php _e( 'URL', 'blogroll' ); ?></label>
 							<input type="text" id="quick_link" name="quick_link" size="100%" value="" class="styledformelement"></p>
 						</div>
@@ -25,7 +23,7 @@
 			</div>
 		</div>
 		</form>
-		<hr>
+
 		
 		
 		
@@ -47,7 +45,7 @@
 		</div>
 		</div>
 			
-			<div class="container pagesplitter">
+			<div class="pagesplitter">
 				<ul class="tabcontrol tabs">
 					<?php
 					$first = 'first';

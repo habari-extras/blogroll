@@ -1,7 +1,5 @@
 <?php include HABARI_PATH . '/system/admin/header.php'; ?>
 
-<div class="container"><?php if(Session::has_messages()) {Session::messages_out();} ?></div>
-	
 	<div class="container">
 		<h2><?php _e( 'Manage Blogroll', 'blogroll' ); ?></h2>
 		<p>
@@ -9,12 +7,10 @@
 		<?php printf( _t( 'Or you can <a href="%s">Publish a new Blogroll link</a>.', 'blogroll' ), URL::get( 'admin', 'page=blogroll_publish' ) ); ?>
 		</p>
 	</div>
-	
-	<hr>
-	
+		
 		<form name="form_blogroll" enctype="multipart/form-data" id="form_blogroll" action="<?php URL::out('admin', 'page=blogroll_manage'); ?>" method="post">
 		
-		<div class="container pagesplitter">
+		<div class="pagesplitter">
 			<ul class="tabcontrol tabs">
 				<li class="import_opml_blogroll first" ><a href="#import_opml_blogroll" style="width: 125px;"><?php _e( 'Import/Export OPML', 'blogroll' ); ?></a></li><li class="bookmarklets_blogroll last"><a href="#bookmarklets_blogroll"><?php _e( 'Bookmarklets', 'blogroll' ); ?></a></li>
 			</ul>
@@ -25,7 +21,7 @@
 						<h2><?php _e( 'Import', 'blogroll' ); ?></h2>
 						<p><?php _e( 'Upload or enter the URL of the OPML file to import.', 'blogroll' ); ?></p>
 						
-						<div class="container">
+						<div>
 							<p><label for="opml_file" class="incontent"><?php _e( 'URL', 'blogroll' ); ?></label>
 							<input type="text" id="opml_file" name="opml_file" size="100%" value="" class="styledformelement"></p>
 							
@@ -38,10 +34,10 @@
 					<div class="container">
 						<h2><?php _e( 'Export', 'blogroll' ); ?></h2>
 						
-						<div class="container">
+						<div class="">
 							<ul class="prepend-1">
 								<li><a href="<?php URL::out( 'blogroll_opml' ); ?>"><?php _e( 'Export as OPML 1.1', 'blogroll' ); ?></a></li>
-								<li>Export as OPML 2.0 with ponies attached. OMG PONIES! (coming soon)</li>
+								<li><p>Export as OPML 2.0 with ponies attached. OMG PONIES! (coming soon)</p></li>
 							</ul>
 						</div>
 					</div>
@@ -53,7 +49,7 @@
 					<div class="container">
 						<p><?php _e( 'Add the following "Bookmarklets" to your browsers bookmarks, for easy Blogrolling of your favourite sites.', 'blogroll' ); ?></p>
 						
-						<div class="container">
+						<div>
 							<ul class="prepend-1">
 								<li><a href="<?php printf( "javascript:location.href='%s?url='+encodeURIComponent(location.href)+'&name='+encodeURIComponent(document.title)", URL::get( 'admin', 'page=blogroll_publish' ) ); ?>"><?php _e ( 'Add to Blogroll', 'blogroll' ); ?></a></li>
 								<li><a href="<?php printf( "javascript:location.href='%s?quick_link_bookmarklet='+encodeURIComponent(location.href)", URL::get( 'admin', 'page=blogroll_publish' ) ); ?>"><?php _e ( 'Quick Link Blogroll', 'blogroll' ); ?></a></li>

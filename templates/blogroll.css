@@ -30,3 +30,11 @@
 	height: 150px;
 	font-size: 14px;
 	}
+.splitter p {
+	color:#8a8a8a;
+	}
+#extras_settings .container, #tags_settings .container {
+	background:transparent none repeat scroll 0% 0%;
+	overflow:visible;
+	padding:0px;
+}
