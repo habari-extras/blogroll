@@ -44,12 +44,12 @@ class Blogroll extends Plugin
 				CronTab::add_hourly_cron( 'blogroll:update', 'blogroll_update_cron', 'Updates the blog updated timestamp from weblogs.com' );
 			}
 			
-			Options::set( 'blogroll:db_version', self::DB_VERSION );
-			Options::set( 'blogroll:use_updated', true );
-			Options::set( 'blogroll:max_links', '10' );
-			Options::set( 'blogroll:sort_by', 'id' );
-			Options::set( 'blogroll:direction', 'ASC' );
-			Options::set( 'blogroll:list_title', 'Blogroll' );
+			Options::set( 'blogroll__db_version', self::DB_VERSION );
+			Options::set( 'blogroll__use_updated', true );
+			Options::set( 'blogroll__max_links', '10' );
+			Options::set( 'blogroll__sort_by', 'id' );
+			Options::set( 'blogroll__direction', 'ASC' );
+			Options::set( 'blogroll__list_title', 'Blogroll' );
 			
 			if ( $this->install_db_tables() ) {
 				Session::notice( _t( 'Created the Blogroll database tables.', 'blogroll' ) );
@@ -137,10 +137,10 @@ class Blogroll extends Plugin
 		DB::register_table( 'bloginfo' );
 		DB::register_table( 'tag2blog' );
 		
-		if ( Options::get( 'blogroll:db_version' ) && self::DB_VERSION > Options::get( 'blogroll:db_version' ) ) {
+		if ( Options::get( 'blogroll__db_version' ) && self::DB_VERSION > Options::get( 'blogroll__db_version' ) ) {
 			$this->install_db_tables();
 			EventLog::log( 'Updated Blogroll.' );
-			Options::set( 'blogroll:db_version', self::DB_VERSION );
+			Options::set( 'blogroll__db_version', self::DB_VERSION );
 		}
 	}
 	
@@ -160,21 +160,22 @@ class Blogroll extends Plugin
 				case _t( 'Configure', 'blogroll' ):
 					$form= new FormUI( 'blogroll' );
 					
-					$title= $form->add( 'text', 'list_title', _t( 'List title: ', 'blogroll' ) );
+					$title= $form->append( 'text', 'list_title', 'option:blogroll__list_title', _t( 'List title: ', 'blogroll' ) );
 					
-					$max= $form->add( 'text', 'max_links', _t( 'Max. displayed links: ', 'blogroll') );
+					$max= $form->append( 'text', 'max_links', 'option:blogroll__max_links', _t( 'Max. displayed links: ', 'blogroll') );
 					
 					$sort_bys= array_merge( 
 						array_combine( array_keys( Blog::default_fields() ), array_map( 'ucwords', array_keys( Blog::default_fields() ) ) ),
 						array( 'random' => _t('Randomly', 'blogroll') )
 						);
-					$sortby= $form->add( 'select', 'sort_by', _t( 'Sort By: ', 'blogroll'), $sort_bys );
+					$sortby= $form->append( 'select', 'sort_by', 'option:blogroll__sort_by', _t( 'Sort By: ', 'blogroll'), $sort_bys );
 					
 					$orders= array( 'ASC' => _t('Ascending' ,'blogroll'), 'DESC' => _t('Descending' ,'blogroll') );
-					$order= $form->add( 'select', 'direction', _t( 'Order: ', 'blogroll'), $orders );
+					$order= $form->append( 'select', 'direction', 'option:blogroll__direction', _t( 'Order: ', 'blogroll'), $orders );
 					
-					$update= $form->add( 'checkbox', 'use_update', _t( 'Use Weblogs.com to get updates? ', 'blogroll') );
+					$update= $form->append( 'checkbox', 'use_update', 'option:blogroll__use_update', _t( 'Use Weblogs.com to get updates? ', 'blogroll') );
 					
+					$form->append( 'submit', 'save', 'Save' );
 					$form->out();
 					break;
 			}
@@ -369,14 +370,14 @@ class Blogroll extends Plugin
 	
 	public function theme_show_blogroll( $theme, $user_params= array() )
 	{
-		$theme->blogroll_title= Options::get( 'blogroll:list_title' );
+		$theme->blogroll_title= Options::get( 'blogroll__list_title' );
 		
 		// Build the params array to pass it to the get() method
-		$order_by= Options::get( 'blogroll:sort_by' );
-		$direction= Options::get( 'blogroll:direction');
+		$order_by= Options::get( 'blogroll__sort_by' );
+		$direction= Options::get( 'blogroll__direction');
 		
 		$params= array(
-			'limit' => Options::get( 'blogroll:max_links' ),
+			'limit' => Options::get( 'blogroll__max_links' ),
 			'order_by' => $order_by . ' ' . $direction,
 			);
 			
@@ -387,9 +388,9 @@ class Blogroll extends Plugin
 	
 	public function filter_blogroll_update_cron( $success )
 	{
-		if ( Options::get( 'blogroll:use_updated' ) ) {
+		if ( Options::get( 'blogroll__use_updated' ) ) {
 			$request= new RemoteRequest( 'http://www.weblogs.com/rssUpdates/changes.xml', 'GET' );
-			$request->add_header( array( 'If-Modified-Since', Options::get('blogroll:last_update') ) );
+			$request->add_header( array( 'If-Modified-Since', Options::get('blogroll__last_update') ) );
 			if ( $request->execute() ) {
 				try {
 					$xml= new SimpleXMLElement( $request->get_response_body() );
@@ -409,7 +410,7 @@ class Blogroll extends Plugin
 						DB::update( DB::table( 'blogroll' ), array( 'updated' => $update ), $match );
 					}
 				}
-				Options::set( 'blogroll:last_update', gmdate( 'D, d M Y G:i:s e' ) );
+				Options::set( 'blogroll__last_update', gmdate( 'D, d M Y G:i:s e' ) );
 			}
 			return true;
 		}
