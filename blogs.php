@@ -19,7 +19,7 @@ class Blogs extends ArrayObject
 		return false;
 	}
 	
-	public function get( $paramarray= array() )
+	public static function get( $paramarray= array() )
 	{	
 		//convert to array if passed as a querystring	
 		$paramarray= Utils::get_params( $paramarray );
