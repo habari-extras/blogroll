@@ -17,8 +17,8 @@ require_once "blogrollopmlhandler.php";
 
 class Blogroll extends Plugin
 {
-	const VERSION= '0.5-beta';
-	const DB_VERSION= 003;
+	const VERSION = '0.5-beta';
+	const DB_VERSION = 003;
 
 	public function info()
 	{
@@ -72,7 +72,7 @@ class Blogroll extends Plugin
 	{
 		switch ( DB::get_driver_name() ) {
 			case 'mysql':
-				$schema= "CREATE TABLE " . DB::table('blogroll') . " (
+				$schema = "CREATE TABLE " . DB::table('blogroll') . " (
 				id INT UNSIGNED NOT NULL AUTO_INCREMENT,
 				name VARCHAR(255) NOT NULL,
 				url VARCHAR(255) NOT NULL,
@@ -98,7 +98,7 @@ class Blogroll extends Plugin
 				);";
 				break;
 			case 'sqlite':
-				$schema= "CREATE TABLE " . DB::table('blogroll') . " (
+				$schema = "CREATE TABLE " . DB::table('blogroll') . " (
 				id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 				name VARCHAR(255) NOT NULL,
 				url VARCHAR(255) NOT NULL,
@@ -158,22 +158,22 @@ class Blogroll extends Plugin
 		if ( $this->plugin_id() == $plugin_id ) {
 			switch ( $action ) {
 				case _t( 'Configure', 'blogroll' ):
-					$form= new FormUI( 'blogroll' );
+					$form = new FormUI( 'blogroll' );
 
-					$title= $form->append( 'text', 'list_title', 'option:blogroll__list_title', _t( 'List title: ', 'blogroll' ) );
+					$title = $form->append( 'text', 'list_title', 'option:blogroll__list_title', _t( 'List title: ', 'blogroll' ) );
 
-					$max= $form->append( 'text', 'max_links', 'option:blogroll__max_links', _t( 'Max. displayed links: ', 'blogroll') );
+					$max = $form->append( 'text', 'max_links', 'option:blogroll__max_links', _t( 'Max. displayed links: ', 'blogroll') );
 
-					$sort_bys= array_merge(
+					$sort_bys = array_merge(
 						array_combine( array_keys( Blog::default_fields() ), array_map( 'ucwords', array_keys( Blog::default_fields() ) ) ),
 						array( 'random' => _t('Randomly', 'blogroll') )
 						);
-					$sortby= $form->append( 'select', 'sort_by', 'option:blogroll__sort_by', _t( 'Sort By: ', 'blogroll'), $sort_bys );
+					$sortby = $form->append( 'select', 'sort_by', 'option:blogroll__sort_by', _t( 'Sort By: ', 'blogroll'), $sort_bys );
 
-					$orders= array( 'ASC' => _t('Ascending' ,'blogroll'), 'DESC' => _t('Descending' ,'blogroll') );
-					$order= $form->append( 'select', 'direction', 'option:blogroll__direction', _t( 'Order: ', 'blogroll'), $orders );
+					$orders = array( 'ASC' => _t('Ascending' ,'blogroll'), 'DESC' => _t('Descending' ,'blogroll') );
+					$order = $form->append( 'select', 'direction', 'option:blogroll__direction', _t( 'Order: ', 'blogroll'), $orders );
 
-					$update= $form->append( 'checkbox', 'use_update', 'option:blogroll__use_update', _t( 'Use Weblogs.com to get updates? ', 'blogroll') );
+					$update = $form->append( 'checkbox', 'use_update', 'option:blogroll__use_update', _t( 'Use Weblogs.com to get updates? ', 'blogroll') );
 
 					$form->append( 'submit', 'save', 'Save' );
 					$form->out();
@@ -194,25 +194,25 @@ class Blogroll extends Plugin
 		extract( $handler->handler_vars );
 
 		if ( isset( $change ) && isset( $blog_ids ) ) {
-			$count= count( $blog_ids );
-			$blog_ids= (array) $blog_ids;
+			$count = count( $blog_ids );
+			$blog_ids = (array) $blog_ids;
 
 			switch ( $change ) {
 				case 'delete':
 					foreach ( $blog_ids as $blog_id ) {
-						$blog= Blog::get( $blog_id );
+						$blog = Blog::get( $blog_id );
 						$blog->delete();
 					}
 					Session::notice( sprintf( _n('Deleted %d blog', 'Deleted %d blogs', $count, 'blogroll'), $count ) );
 					break;
 				case 'auto_update':
 					foreach ( $blog_ids as $blog_id ) {
-						$blog= Blog::get( $blog_id );
-						if ( $info= Blogs::get_info_from_url( $blog->feed?$blog->feed:$blog->url ) ) {
+						$blog = Blog::get( $blog_id );
+						if ( $info = Blogs::get_info_from_url( $blog->feed?$blog->feed:$blog->url ) ) {
 							foreach ( $info as $key => $value ) {
-								$value= trim( $value );
+								$value = trim( $value );
 								if ( $value ) {
-									$blog->$key= $value;
+									$blog->$key = $value;
 								}
 							}
 							$blog->update();
@@ -227,10 +227,10 @@ class Blogroll extends Plugin
 			}
 		}
 		elseif ( !empty( $opml_file ) || ( isset( $_FILES['userfile'] ) && is_uploaded_file( $_FILES['userfile']['tmp_name'] ) ) ) {
-			$file= !empty( $opml_file ) ? RemoteRequest::get_contents( $opml_file ) : file_get_contents( $_FILES['userfile']['tmp_name'] );
+			$file = !empty( $opml_file ) ? RemoteRequest::get_contents( $opml_file ) : file_get_contents( $_FILES['userfile']['tmp_name'] );
 			try {
-				$xml= new SimpleXMLElement( $file );
-				$count= $this->import_opml( $xml->body );
+				$xml = new SimpleXMLElement( $file );
+				$count = $this->import_opml( $xml->body );
 				Session::notice( sprintf( _n('Imported %d blog from %s', 'Imported %d blogs from %s', $count, 'blogroll'), $count, (string) $xml->head->title ) );
 			}
 			catch ( Exception $e ) {
@@ -244,16 +244,16 @@ class Blogroll extends Plugin
 
 	public function action_admin_theme_post_blogroll_publish( $handler, $theme )
 	{
-		$params= array_intersect_key( $handler->handler_vars, array_flip( array('name', 'url', 'feed', 'description', 'owner', 'tags') ) );
+		$params = array_intersect_key( $handler->handler_vars, array_flip( array('name', 'url', 'feed', 'description', 'owner', 'tags') ) );
 		extract( $handler->handler_vars );
 
 		if ( !empty( $quick_link ) ) {
-			$link= $quick_link;
+			$link = $quick_link;
 			if ( strpos( $quick_link, 'http://' ) !== 0 ) {
-				$quick_link= 'http://' . $quick_link;
+				$quick_link = 'http://' . $quick_link;
 			}
-			if ( $info= Blogs::get_info_from_url( $quick_link ) ) {
-				$params= array_merge( $params, $info );
+			if ( $info = Blogs::get_info_from_url( $quick_link ) ) {
+				$params = array_merge( $params, $info );
 			}
 			else {
 				$_POST['url']= $quick_link;
@@ -271,16 +271,16 @@ class Blogroll extends Plugin
 		}
 		else {
 			if ( !empty( $id ) ) {
-				$blog= Blog::get( $id );
+				$blog = Blog::get( $id );
 				foreach ( $params as $key => $value ) {
-					$blog->$key= $value;
+					$blog->$key = $value;
 				}
 				$blog->update();
 				Session::notice( sprintf( _t('Updated blog %s', 'blogroll'), $blog->name ) );
 				Session::add_to_set( 'last_form_data', array_merge( $_POST, $params ), 'get' );
 			}
 			elseif ( $params ) {
-				$blog= new Blog( $params );
+				$blog = new Blog( $params );
 				if ( $blog->insert() ) {
 					Session::notice( sprintf( _t('Successfully added blog %s', 'blogroll'), $blog->name ) );
 					$_POST['id']= $blog->id;
@@ -293,7 +293,7 @@ class Blogroll extends Plugin
 		}
 
 		if ( !empty( $quick_link ) && !empty( $redirect_to ) ) {
-			$msg= sprintf( _t('Successfully added blog %s. Now going back.', 'blogroll'), htmlspecialchars( $blog->name ) );
+			$msg = sprintf( _t('Successfully added blog %s. Now going back.', 'blogroll'), htmlspecialchars( $blog->name ) );
 			echo "<html><head></head><body onload=\"alert('$msg');location.href='$redirect_to';\">";
 			Session::messages_out();
 			echo "</body></html>";
@@ -307,7 +307,7 @@ class Blogroll extends Plugin
 	public function action_admin_theme_get_blogroll_manage( $handler, $theme )
 	{
 		Stack::add( 'admin_stylesheet', array( $this->get_url() . '/templates/blogroll.css', 'screen' ) );
-		$theme->feed_icon= $this->get_url() . '/templates/feed.png';
+		$theme->feed_icon = $this->get_url() . '/templates/feed.png';
 
 		$theme->display( 'blogroll_manage' );
 		exit;
@@ -325,29 +325,29 @@ class Blogroll extends Plugin
 		}
 
 		if ( !empty( $id ) ) {
-			$blog= Blog::get( $id );
-			$theme->tags= htmlspecialchars( Utils::implode_quoted( ',', $blog->tags ) );
+			$blog = Blog::get( $id );
+			$theme->tags = htmlspecialchars( Utils::implode_quoted( ',', $blog->tags ) );
 		}
 		else {
-			$blog= new Blog;
-			$theme->tags= '';
+			$blog = new Blog;
+			$theme->tags = '';
 		}
 		foreach ( $blog->to_array() as $key => $value ) {
-			$theme->$key= $value;
+			$theme->$key = $value;
 		}
 
-		$theme->relationships= Plugins::filter( 'blogroll_relationships', array('external'=>'External', 'nofollow'=>'Nofollow', 'bookmark'=>'Bookmark') );
-		$controls= array(
+		$theme->relationships = Plugins::filter( 'blogroll_relationships', array('external'=>'External', 'nofollow'=>'Nofollow', 'bookmark'=>'Bookmark') );
+		$controls = array(
 			'Extras' => $theme->fetch( 'blogroll_publish_extras' ),
 			'Tags' => $theme->fetch( 'publish_tags' ),
 		);
-		$theme->controls= Plugins::filter( 'blogroll_controls', $controls, $blog );
+		$theme->controls = Plugins::filter( 'blogroll_controls', $controls, $blog );
 		$theme->display( 'blogroll_publish' );
 		exit;
 	}
 
 	public function filter_available_templates( $templates, $class ) {
-		$templates= array_merge( $templates, array('blogroll_manage','blogroll_publish','blogroll','blogroll_publish_extras') );
+		$templates = array_merge( $templates, array('blogroll_manage','blogroll_publish','blogroll','blogroll_publish_extras') );
 		return $templates;
 	}
 
@@ -368,20 +368,20 @@ class Blogroll extends Plugin
 		return $template_path;
 	}
 
-	public function theme_show_blogroll( $theme, $user_params= array() )
+	public function theme_show_blogroll( $theme, $user_params = array() )
 	{
-		$theme->blogroll_title= Options::get( 'blogroll__list_title' );
+		$theme->blogroll_title = Options::get( 'blogroll__list_title' );
 
 		// Build the params array to pass it to the get() method
-		$order_by= Options::get( 'blogroll__sort_by' );
-		$direction= Options::get( 'blogroll__direction');
+		$order_by = Options::get( 'blogroll__sort_by' );
+		$direction = Options::get( 'blogroll__direction');
 
-		$params= array(
+		$params = array(
 			'limit' => Options::get( 'blogroll__max_links' ),
 			'order_by' => $order_by . ' ' . $direction,
 		);
 
-		$theme->blogs= Blogs::get( $params );
+		$theme->blogs = Blogs::get( $params );
 
 		return $theme->fetch( 'blogroll' );
 	}
@@ -389,23 +389,23 @@ class Blogroll extends Plugin
 	public function filter_blogroll_update_cron( $success )
 	{
 		if ( Options::get( 'blogroll__use_updated' ) ) {
-			$request= new RemoteRequest( 'http://www.weblogs.com/rssUpdates/changes.xml', 'GET' );
+			$request = new RemoteRequest( 'http://www.weblogs.com/rssUpdates/changes.xml', 'GET' );
 			$request->add_header( array( 'If-Modified-Since', Options::get('blogroll__last_update') ) );
 			if ( $request->execute() ) {
 				try {
-					$xml= new SimpleXMLElement( $request->get_response_body() );
+					$xml = new SimpleXMLElement( $request->get_response_body() );
 				}
 				catch ( Exception $e ) {
 					// log the failure here!
 				}
-				$atts= $xml->attributes();
-				$updated= strtotime( (string) $atts['updated'] );
+				$atts = $xml->attributes();
+				$updated = strtotime( (string) $atts['updated'] );
 				foreach ( $xml->weblog as $weblog ) {
-					$atts= $weblog->attributes();
-					$match= array();
+					$atts = $weblog->attributes();
+					$match = array();
 					$match['url']= (string) $atts['url'];
 					$match['feed']= (string) $atts['rssUrl'];
-					$update= $updated - (int) $atts['when'];
+					$update = $updated - (int) $atts['when'];
 					if ( DB::exists( DB::table( 'blogroll' ), $match ) ) {
 						DB::update( DB::table( 'blogroll' ), array( 'updated' => $update ), $match );
 					}
@@ -443,12 +443,12 @@ class Blogroll extends Plugin
 
 	private function import_opml( SimpleXMLElement $xml )
 	{
-		$count= 0;
+		$count = 0;
 		foreach ( $xml->outline as $outline ) {
-			$atts= (array) $outline->attributes();
-			$params= $this->map_opml_atts( $atts['@attributes'] );
+			$atts = (array) $outline->attributes();
+			$params = $this->map_opml_atts( $atts['@attributes'] );
 			if ( isset( $params['url'] ) && isset( $params['name'] ) ) {
-				$blog= new Blog( $params );
+				$blog = new Blog( $params );
 				$blog->insert();
 				$count++;
 			}
@@ -461,8 +461,8 @@ class Blogroll extends Plugin
 
 	private function map_opml_atts( $atts )
 	{
-		$atts= array_map( 'strval', $atts );
-		$valid_atts= array_intersect_key( $atts, array_flip( array('name', 'url', 'feed', 'description', 'owner', 'updated') ) );
+		$atts = array_map( 'strval', $atts );
+		$valid_atts = array_intersect_key( $atts, array_flip( array('name', 'url', 'feed', 'description', 'owner', 'updated') ) );
 		foreach ( $atts as $key => $val ) {
 			switch ( $key ) {
 				case 'htmlUrl':
