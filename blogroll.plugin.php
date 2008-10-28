@@ -502,6 +502,7 @@ class Blogroll2 extends Plugin
 		DB::query('DROP TABLE IF EXISTS {blogroll}');
 		DB::query('DROP TABLE IF EXISTS {bloginfo}');
 		DB::query('DROP TABLE IF EXISTS {tag2blog}');
+		Options::delete('blogroll__db_version');
 		Options::set( 'blogroll__api_version', self::API_VERSION );
 	}
 }
