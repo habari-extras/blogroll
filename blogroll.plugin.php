@@ -384,6 +384,7 @@ class Blogroll2 extends Plugin
 						$blog->info->{$field} = ${$field};
 					}
 				}
+				$blog->update();
 				$count++;
 			}
 			if ( $outline->children() ) {
