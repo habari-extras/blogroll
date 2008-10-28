@@ -478,12 +478,12 @@ class Blogroll2 extends Plugin
 			return;
 		}
 		
-		$opml = new SimpleXMLElement( '<opml version="1.1"></opml>' );
+		Post::add_new_type(self::CONTENT_TYPE);
 		
+		$opml = new SimpleXMLElement( '<opml version="1.1"></opml>' );
 		$head = $opml->addChild( 'head' );
 		$head->addChild( 'title', Options::get( 'title' ) );
 		$head->addChild( 'dateCreated', gmdate( 'D, d M Y G:i:s e' ) );
-		
 		$body = $opml->addChild( 'body' );
 		
 		$blogs = DB::get_results("SELECT * FROM {blogroll}", array());
