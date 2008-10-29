@@ -9,7 +9,7 @@
  * url, feedurl, ownername, relationship
  */
 
-class Blogroll2 extends Plugin
+class Blogroll extends Plugin
 {
 	const VERSION = '0.6-beta';
 	const API_VERSION = 004;
@@ -75,6 +75,7 @@ class Blogroll2 extends Plugin
 			$this->upgrade_pre_004();
 		}
 		$this->add_template( 'blogroll', dirname($this->get_file()) . '/templates/blogroll.php' );
+		$this->add_template( 'formcontrol_opml_file', dirname($this->get_file()) . '/templates/formcontrol_file.php' );
 	}
 	
 	/**
@@ -106,26 +107,80 @@ class Blogroll2 extends Plugin
 			switch ( $action ) {
 				case _t( 'Configure', 'blogroll' ):
 					$form = new FormUI( 'blogroll' );
-
-					$title = $form->append( 'text', 'list_title', 'option:blogroll__list_title', _t( 'List title: ', 'blogroll' ) );
-
-					$max = $form->append( 'text', 'max_links', 'option:blogroll__max_links', _t( 'Max. displayed links: ', 'blogroll') );
-
+					
+					// display settings
+					$display_wrap = $form->append( 'fieldset', 'display', _t('Display Settings', 'blogroll') );
+					$title = $display_wrap->append(
+						'text', 'list_title', 'option:blogroll__list_title', _t( 'List title: ', 'blogroll' )
+					);
+					$max = $display_wrap->append(
+						'text', 'max_links', 'option:blogroll__max_links',
+						_t( 'Max. displayed links: ', 'blogroll')
+					);
 					$sort_bys = array_merge(
-						array_combine( array_keys( Post::default_fields() ), array_map( 'ucwords', array_keys( Post::default_fields() ) ) ),
+						array_combine( $this->info_fields, array_map( 'ucwords', $this->info_fields ) ),
 						array( 'random' => _t('Randomly', 'blogroll') )
 						);
-					$sortby = $form->append( 'select', 'sort_by', 'option:blogroll__sort_by', _t( 'Sort By: ', 'blogroll'), $sort_bys );
-
+					$sortby = $display_wrap->append(
+						'select', 'sort_by', 'option:blogroll__sort_by',
+						_t( 'Sort By: ', 'blogroll'), $sort_bys
+					);
 					$orders = array( 'ASC' => _t('Ascending' ,'blogroll'), 'DESC' => _t('Descending' ,'blogroll') );
-					$order = $form->append( 'select', 'direction', 'option:blogroll__direction', _t( 'Order: ', 'blogroll'), $orders );
-
-					$update = $form->append( 'checkbox', 'use_update', 'option:blogroll__use_update', _t( 'Use Weblogs.com to get updates? ', 'blogroll') );
-
+					$order = $display_wrap->append(
+						'select', 'direction', 'option:blogroll__direction',
+						_t( 'Order: ', 'blogroll'), $orders
+					);
+					
+					// other settings
+					$other_wrap = $form->append( 'fieldset', 'settings', _t('More Settings', 'blogroll') );
+					$update = $other_wrap->append(
+						'checkbox', 'use_update', 'option:blogroll__use_update',
+						_t( 'Use Weblogs.com to get updates? ', 'blogroll')
+					);
+					
+					// importer
+					$import_wrap = $form->append( 'fieldset', 'import', _t('Import', 'blogroll') );
+					$import = $import_wrap->append( 'text', 'opml_file', 'null:null', _t( 'Import OPML File ', 'blogroll') );
+					$import = $import_wrap->append( 'text', 'opml_upload', 'null:null',
+						_t( 'Upload OPML File ', 'blogroll'), 'formcontrol_opml_file'
+					);
+					$import_wrap->append( 'submit', 'import', 'Import' );
+					
 					$form->append( 'submit', 'save', 'Save' );
+					$form->on_success( array($this, 'formui_submit') );
+					$form->properties['onsubmit'] = '" enctype="multipart/form-data"';
 					$form->out();
 					break;
 			}
+		}
+	}
+	
+	public function formui_submit( FormUI $form )
+	{
+		$upload_hash = sprintf('%x', crc32($form->opml_upload->name));
+		if ( $form->opml_file->value != '') {
+			$file = RemoteRequest::get_contents( $form->opml_file->value );
+		}
+		elseif ( isset($_FILES[$upload_hash]) && is_uploaded_file($_FILES[$upload_hash]['tmp_name']) ) {
+			$file = file_get_contents($_FILES[$upload_hash]['tmp_name']);
+		}
+		else {
+			return;
+		}
+		
+		try {
+			$xml = new SimpleXMLElement( $file );
+			$count = $this->import_opml( $xml->body );
+			Session::notice(
+				sprintf(
+					_n('Imported %d blog from %s', 'Imported %d blogs from %s', $count, 'blogroll'),
+					$count,
+					(string) $xml->head->title
+				)
+			);
+		}
+		catch ( Exception $e ) {
+			Session::error( _t('Sorry, could not parse that OPML file. It may be malformed.', 'blogroll') );
 		}
 	}
 	
@@ -357,10 +412,14 @@ class Blogroll2 extends Plugin
 	}
 	
 	/**
-	 * @todo fix this for use with Post object and content_type
+	 * Import the <outline> datat from simplexml obj. $xml->body.
 	 */
 	private function import_opml( SimpleXMLElement $xml )
 	{
+		if ( ! $xml->outline ) {
+			throw new Exception('Not a valid OPML resource');
+		}
+		
 		$count = 0;
 		foreach ( $xml->outline as $outline ) {
 			$atts = (array) $outline->attributes();
@@ -388,7 +447,7 @@ class Blogroll2 extends Plugin
 				$blog->update();
 				$count++;
 			}
-			if ( $outline->children() ) {
+			if ( $outline->outline ) {
 				$count += $this->import_opml( $outline );
 			}
 		}
@@ -396,9 +455,9 @@ class Blogroll2 extends Plugin
 	}
 	
 	/**
-	 * Map standar OPML links to Post fields.
+	 * Maps standard OPML link attributes to Post fields.
 	 */
-	private function map_opml_atts( $atts )
+	private function map_opml_atts( array $atts )
 	{
 		$atts = array_map( 'strval', $atts );
 		$valid_atts = array_intersect_key(
@@ -430,7 +489,7 @@ class Blogroll2 extends Plugin
 	}
 	
 	/**
-	 * @todo fix this for use with Post object and content_type
+	 * @todo test this!!
 	 */
 	public function filter_blogroll_update_cron( $success )
 	{
@@ -502,11 +561,27 @@ class Blogroll2 extends Plugin
 			$outline->addAttribute( 'content', $blog->description );
 			$outline->addAttribute( 'type', 'link' );
 		}
-		$this->import_opml($opml->body);
+		try {
+			$count = $this->import_opml($opml->body);
+			DB::query('DROP TABLE IF EXISTS {blogroll}');
+			DB::query('DROP TABLE IF EXISTS {bloginfo}');
+			DB::query('DROP TABLE IF EXISTS {tag2blog}');
+			EventLog::log(
+				sprintf(
+					_n(
+						'Imported %d blog from previous Blogroll version, and removed obsolete tables',
+						'Imported %d blogs from previous Blogroll version, and removed obsolete tables',
+						$count,
+						'blogroll'
+					),
+					$count
+				)
+			);
+		}
+		catch (Exception $e) {
+			EventLog::log( _t('Could Import previous data. please import manually and drop tables.', 'blogroll') );
+		}
 		
-		DB::query('DROP TABLE IF EXISTS {blogroll}');
-		DB::query('DROP TABLE IF EXISTS {bloginfo}');
-		DB::query('DROP TABLE IF EXISTS {tag2blog}');
 		Options::delete('blogroll__db_version');
 		Options::set( 'blogroll__api_version', self::API_VERSION );
 	}
