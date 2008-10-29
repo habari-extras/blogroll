@@ -199,12 +199,13 @@ class Blogroll extends Plugin
 					Utils::redirect( URL::get( 'admin', 'page=publish&content_type=link' ) );
 					exit;
 				}
-				
+				$data = array_map( create_function('$a', 'return InputFilter::filter($a);'), $data );
 				$post->title= $data['name'];
 				$post->info->url= $data['url'];
 				$post->content= $data['description'];
 				$post->info->feedurl= $data['feed'];
 				$post->slug= Utils::slugify($data['name']);
+				$post->status= Post::status('published');
 				
 			} else {
 				$post->info->url= $form->url->value;
@@ -217,20 +218,22 @@ class Blogroll extends Plugin
 	
 	public function action_form_publish( FormUI $form, Post $post) {	
 		
-		if( $post->content_type == Post::type(self::CONTENT_TYPE) ) {
+		if( $form->content_type->value == Post::type(self::CONTENT_TYPE) ) {
 		
-			// Quick link button to automagically discover info
-			$quicklink_controls= $form->append('tabs', 'quicklink_controls');
-			
-			$quicklink_tab= $quicklink_controls->append('fieldset', 'quicklink_tab', _t('Quick Link'));
-			$quicklink_wrapper= $quicklink_tab->append('wrapper', 'quicklink_wrapper');
-			$quicklink_wrapper->class='container';
-			
-			$quicklink_wrapper->append('text', 'quick_url', 'null:null', _t('Quick URL'), 'tabcontrol_text');
-			$quicklink_wrapper->append('static', 'quick_url_info', '<p class="column span-15">Enter a url or feed url and other information will be automatically discovered.</p>');
-			$quicklink_wrapper->append('submit', 'addquick', _t('Add'), 'admincontrol_submit');
-			
-			$quicklink_controls->move_before($quicklink_controls, $form);
+			if ( !Controller::get_var('id') ) {
+				// Quick link button to automagically discover info
+				$quicklink_controls= $form->append('tabs', 'quicklink_controls');
+				
+				$quicklink_tab= $quicklink_controls->append('fieldset', 'quicklink_tab', _t('Quick Link'));
+				$quicklink_wrapper= $quicklink_tab->append('wrapper', 'quicklink_wrapper');
+				$quicklink_wrapper->class='container';
+				
+				$quicklink_wrapper->append('text', 'quick_url', 'null:null', _t('Quick URL'), 'tabcontrol_text');
+				$quicklink_wrapper->append('static', 'quick_url_info', '<p class="column span-15">Enter a url or feed url and other information will be automatically discovered.</p>');
+				$quicklink_wrapper->append('submit', 'addquick', _t('Add'), 'admincontrol_submit');
+				
+				$quicklink_controls->move_before($quicklink_controls, $form);
+			}
 			
 			// Remove fields we don't need
 			$form->silos->remove();
@@ -450,7 +453,7 @@ class Blogroll extends Plugin
 			$atts = (array) $outline->attributes();
 			$params = $this->map_opml_atts( $atts['@attributes'] );
 			if ( isset( $params['url'] ) && isset( $params['title'] ) ) {
-				
+				$params = array_map( create_function('$a', 'return InputFilter::filter($a);'), $params );
 				extract($params);
 				$user = User::identify();
 				$params = array(
