@@ -168,6 +168,8 @@ class Blogroll extends Plugin
 			$file = file_get_contents($_FILES[$upload_hash]['tmp_name']);
 		}
 		else {
+			Session::notice( _t('Blogroll options saved.', 'blogroll') );
+			$form->save();
 			return;
 		}
 		
