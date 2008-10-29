@@ -609,6 +609,7 @@ class Blogroll extends Plugin
 		
 		Options::delete('blogroll__db_version');
 		Options::set( 'blogroll__api_version', self::API_VERSION );
+		Options::set( 'blogroll__sort_by', 'id' );
 	}
 }
 ?>
