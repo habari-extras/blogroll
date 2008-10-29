@@ -373,6 +373,7 @@ class Blogroll2 extends Plugin
 					'title' => $title,
 					'pubdate' => isset($pubdate) ? $pubdate : HabariDateTime::date_create(),
 					'updated' => isset($updated) ? $updated : HabariDateTime::date_create(),
+					'content' => isset($content) ? $content : '',
 					'status' => Post::status('published'),
 					'content_type' => Post::type(self::CONTENT_TYPE),
 					'user_id' => $user->id,
@@ -405,7 +406,7 @@ class Blogroll2 extends Plugin
 			array_flip(
 				array_merge(
 					$this->info_fields,
-					array( 'title', 'pubdate', 'updated')
+					array( 'title', 'pubdate', 'updated', 'content')
 				)
 			)
 		);
@@ -419,6 +420,9 @@ class Blogroll2 extends Plugin
 					break;
 				case 'text':
 					$valid_atts['title']= $atts['text'];
+					break;
+				case 'description':
+					$valid_atts['content']= $atts['description'];
 					break;
 			}
 		}
