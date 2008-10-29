@@ -122,7 +122,7 @@ class Blogroll extends Plugin
 							array_keys(Post::default_fields()),
 							array_map( 'ucwords', array_keys(Post::default_fields()) )
 						),
-						array( 'random()' => _t('Randomly', 'blogroll') )
+						array( 'RAND()' => _t('Randomly', 'blogroll') )
 						);
 					$sortby = $display_wrap->append(
 						'select', 'sort_by', 'option:blogroll__sort_by',
