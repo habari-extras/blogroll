@@ -118,7 +118,10 @@ class Blogroll extends Plugin
 						_t( 'Max. displayed links: ', 'blogroll')
 					);
 					$sort_bys = array_merge(
-						array_combine( $this->info_fields, array_map( 'ucwords', $this->info_fields ) ),
+						array_combine(
+							array_keys(Post::default_fields()),
+							array_map( 'ucwords', array_keys(Post::default_fields()) )
+						),
 						array( 'random' => _t('Randomly', 'blogroll') )
 						);
 					$sortby = $display_wrap->append(
@@ -349,6 +352,26 @@ class Blogroll extends Plugin
 			}
 		}
 		return false;
+	}
+	
+	public function theme_show_blogroll( $theme, $user_params = array() )
+	{
+		$theme->blogroll_title = Options::get( 'blogroll__list_title' );
+		
+		// Build the params array to pass it to the get() method
+		$order_by = Options::get( 'blogroll__sort_by' );
+		$direction = Options::get( 'blogroll__direction');
+		
+		$params = array(
+			'limit' => Options::get( 'blogroll__max_links' ),
+			'orderby' => $order_by . ' ' . $direction,
+			'status' => Post::status('published'),
+			'content_type' => Post::type(self::CONTENT_TYPE),
+		);
+		
+		$theme->blogs = Posts::get( $params );
+		
+		return $theme->fetch( 'blogroll' );
 	}
 	
 	public function filter_habminbar( $menu )
