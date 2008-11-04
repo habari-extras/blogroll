@@ -503,17 +503,22 @@ class Blogroll extends Plugin
 		
 		$output = <<< BR_IMPORT_STAGE1
 			</form><form method="post" action="" enctype="multipart/form-data">
-			<p>Habari will attempt to import links from a OPML file.</p>
-			{$warning}
-			<fieldset><legend>OPML Import</legend>
 			<p>Please provide the URI, or upload your OPML file</p>
-			<table>
-				<tr><td>URI</td><td><input type="text" name="opml_url" value="{$opml_url}"></td></tr>
-				<tr><td>Upload</td><td><input type="file" name="opml_file" value=""></td></tr>
-			</table>
+			{$warning}
+			<div class="item clear" id="opmlurl">
+				<span class="pct25"><label for="opml_url">URI To OPML</label></span>
+				<span class="pct50"><input type="text" name="opml_url" value="{$opml_url}"></span>
+				<span class="pct25 helptext">The URL to the OPML file you want to import.</span>
+			</div>
+			<div class="item clear" id="opmlfile">
+				<span class="pct25"><label for="opml_file">Upload OPML</label></span>
+				<span class="pct50"><input type="file" name="opml_file" value=""></span>
+				<span class="pct25 helptext">Or you can upload a OPML file to import.</span>
+			</div>
 			<input type="hidden" name="stage" value="1">
-			</feildset>
-			<p class="submit"><input type="submit" name="import" value="Import" /></p>
+			
+			<div class="item formcontrol"  id="apply"><input type="submit" name="import" class="button" value="Import">
+			</div>
 
 BR_IMPORT_STAGE1;
 		return $output;
