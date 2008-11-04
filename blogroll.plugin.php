@@ -151,33 +151,8 @@ class Blogroll extends Plugin
 	
 	public function formui_submit( FormUI $form )
 	{
-		$upload_hash = sprintf('%x', crc32($form->opml_upload->name));
-		if ( $form->opml_file->value != '') {
-			$file = RemoteRequest::get_contents( $form->opml_file->value );
-		}
-		elseif ( isset($_FILES[$upload_hash]) && is_uploaded_file($_FILES[$upload_hash]['tmp_name']) ) {
-			$file = file_get_contents($_FILES[$upload_hash]['tmp_name']);
-		}
-		else {
-			Session::notice( _t('Blogroll options saved.', 'blogroll') );
-			$form->save();
-			return;
-		}
-		
-		try {
-			$xml = new SimpleXMLElement( $file );
-			$count = $this->import_opml( $xml->body );
-			Session::notice(
-				sprintf(
-					_n('Imported %d blog from %s', 'Imported %d blogs from %s', $count, 'blogroll'),
-					$count,
-					(string) $xml->head->title
-				)
-			);
-		}
-		catch ( Exception $e ) {
-			Session::error( _t('Sorry, could not parse that OPML file. It may be malformed.', 'blogroll') );
-		}
+		Session::notice( _t('Blogroll options saved.', 'blogroll') );
+		$form->save();
 	}
 	
 	public function action_publish_post( Post $post, FormUI $form ) {
