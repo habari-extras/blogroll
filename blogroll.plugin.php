@@ -436,7 +436,7 @@ class Blogroll extends Plugin
 	}
 	
 	/**
-	 * Plugin filter that supplies the UI for the WP importer
+	 * Plugin filter that supplies the UI for the Blogroll importer
 	 *
 	 * @param string $stageoutput The output stage UI
 	 * @param string $import_name The name of the selected importer
@@ -470,7 +470,7 @@ class Blogroll extends Plugin
 				$stage = 2;
 			}
 			else {
-				$inputs['warning']= _t( 'You did not provide an OPML file.' );
+				$inputs['warning']= _t( 'You did not provide an OPML file.', 'blogroll' );
 			}
 			break;
 		}
@@ -498,13 +498,12 @@ class Blogroll extends Plugin
 		$inputs = array_merge( $default_values, $inputs );
 		extract( $inputs );
 		if( $warning != '' ) {
-			$warning = "<p class=\"warning\">{$warning}</p>";
+			Session::error($warning);
 		}
 		
 		$output = <<< BR_IMPORT_STAGE1
 			</form><form method="post" action="" enctype="multipart/form-data">
 			<p>Please provide the URI, or upload your OPML file</p>
-			{$warning}
 			<div class="item clear" id="opmlurl">
 				<span class="pct25"><label for="opml_url">URI To OPML</label></span>
 				<span class="pct50"><input type="text" name="opml_url" value="{$opml_url}"></span>
@@ -574,7 +573,7 @@ WP_IMPORT_STAGE2;
 			if ( empty($file) ) {
 				throw new Exception;
 			}
-			$xml =@ new SimpleXMLElement( $file );
+			$xml =@ new SimpleXMLElement( $file ); // errors as exceptions++
 			$count = $this->import_opml( $xml->body );
 			echo '<p>';
 			printf(
