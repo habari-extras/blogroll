@@ -141,17 +141,8 @@ class Blogroll extends Plugin
 						_t( 'Use Weblogs.com to get updates? ', 'blogroll')
 					);
 					
-					// importer
-					$import_wrap = $form->append( 'fieldset', 'import', _t('Import', 'blogroll') );
-					$import = $import_wrap->append( 'text', 'opml_file', 'null:null', _t( 'Import OPML File ', 'blogroll') );
-					$import = $import_wrap->append( 'text', 'opml_upload', 'null:null',
-						_t( 'Upload OPML File ', 'blogroll'), 'formcontrol_opml_file'
-					);
-					$import_wrap->append( 'submit', 'import', 'Import' );
-					
 					$form->append( 'submit', 'save', 'Save' );
 					$form->on_success( array($this, 'formui_submit') );
-					$form->properties['onsubmit'] = '" enctype="multipart/form-data"';
 					$form->out();
 					break;
 			}
@@ -439,8 +430,162 @@ class Blogroll extends Plugin
 		print $opml;
 	}
 	
+	public function filter_import_names( $import_names )
+	{
+		return array_merge( $import_names, array(_t('BlogRoll OPML file', 'blogroll')) );
+	}
+	
 	/**
-	 * Import the <outline> datat from simplexml obj. $xml->body.
+	 * Plugin filter that supplies the UI for the WP importer
+	 *
+	 * @param string $stageoutput The output stage UI
+	 * @param string $import_name The name of the selected importer
+	 * @param string $stage The stage of the import in progress
+	 * @param string $step The step of the stage in progress
+	 * @return output for this stage of the import
+	 */
+	public function filter_import_stage( $stageoutput, $import_name, $stage, $step )
+	{
+		// Only act on this filter if the import_name is one we handle...
+		if( $import_name != _t('BlogRoll OPML file', 'blogroll') ) {
+			// Must return $stageoutput as it may contain the stage HTML of another importer
+			return $stageoutput;
+		}
+		
+		$inputs = array();
+
+		// Validate input from various stages...
+		switch( $stage ) {
+		case 1:
+			if( isset($_POST['opml_url']) && $_POST['opml_url'] ) {
+				$inputs['opml_url'] = $_POST['opml_url'];
+				$stage = 2;
+			}
+			elseif ( isset($_FILES['opml_file']) && is_uploaded_file($_FILES['opml_file']['tmp_name']) ) {
+				Options::set(
+					"blogroll_{$_FILES['opml_file']['tmp_name']}",
+					file_get_contents($_FILES['opml_file']['tmp_name'])
+				);
+				$inputs['opml_file'] = $_FILES['opml_file']['tmp_name'];
+				$stage = 2;
+			}
+			else {
+				$inputs['warning']= _t( 'You did not provide an OPML file.' );
+			}
+			break;
+		}
+
+		// Based on the stage of the import we're on, do different things...
+		switch( $stage ) {
+		case 1:
+		default:
+			$output = $this->stage1( $inputs );
+			break;
+		case 2:
+			$output = $this->stage2( $inputs );
+		}
+
+		return $output;
+	}
+	
+	private function stage1( array $inputs )
+	{
+		$default_values = array(
+			'opml_url' => '',
+			'opml_file' => '',
+			'warning' => ''
+		 );
+		$inputs = array_merge( $default_values, $inputs );
+		extract( $inputs );
+		if( $warning != '' ) {
+			$warning = "<p class=\"warning\">{$warning}</p>";
+		}
+		
+		$output = <<< BR_IMPORT_STAGE1
+			</form><form method="post" action="" enctype="multipart/form-data">
+			<p>Habari will attempt to import links from a OPML file.</p>
+			{$warning}
+			<fieldset><legend>OPML Import</legend>
+			<p>Please provide the URI, or upload your OPML file</p>
+			<table>
+				<tr><td>URI</td><td><input type="text" name="opml_url" value="{$opml_url}"></td></tr>
+				<tr><td>Upload</td><td><input type="file" name="opml_file" value=""></td></tr>
+			</table>
+			<input type="hidden" name="stage" value="1">
+			</feildset>
+			<p class="submit"><input type="submit" name="import" value="Import" /></p>
+
+BR_IMPORT_STAGE1;
+		return $output;
+	}
+	
+	private function stage2( array $inputs )
+	{
+		$default_values = array(
+			'opml_url' => '',
+			'opml_file' => '',
+			'warning' => ''
+		 );
+		$inputs = array_merge( $default_values, $inputs );
+		extract( $inputs );
+
+		$ajax_url = URL::get( 'auth_ajax', array( 'context' => 'blogroll_import_opml' ) );
+		EventLog::log(_t('Starting OPML Blogroll import'));
+		Options::set('import_errors', array());
+
+		$output = <<< WP_IMPORT_STAGE2
+			<p>Import In Progress</p>
+			<div id="import_progress">Starting Import...</div>
+			<script type="text/javascript">
+			// A lot of ajax stuff goes here.
+			$( document ).ready( function(){
+				$( '#import_progress' ).load(
+					"{$ajax_url}",
+					{
+						opml_url: "{$opml_url}",
+						opml_file: "{$opml_file}"
+					}
+				 );
+			} );
+			</script>
+WP_IMPORT_STAGE2;
+		return $output;
+	}
+	
+	public function action_auth_ajax_blogroll_import_opml( ActionHandler $handler )
+	{
+		$valid_fields = array( 'opml_url', 'opml_file' );
+		$inputs = array_intersect_key( $_POST, array_flip( $valid_fields ) );
+		extract( $inputs );
+		
+		if ( ! empty($opml_url) ) {
+			$file = RemoteRequest::get_contents( $opml_url );
+		}
+		elseif ( ! empty($opml_file) ) {
+			$file = Options::get("blogroll_$opml_file");
+			Options::delete("blogroll_$opml_file");
+		}
+		try {
+			if ( empty($file) ) {
+				throw new Exception;
+			}
+			$xml =@ new SimpleXMLElement( $file );
+			$count = $this->import_opml( $xml->body );
+			echo '<p>';
+			printf(
+				_n('Imported %d link from %s', 'Imported %d links from %s', $count, 'blogroll'),
+				$count,
+				(string) $xml->head->title
+			);
+			echo '</p>';
+		}
+		catch ( Exception $e ) {
+			_e('Sorry, could not parse that OPML file. It may be malformed.', 'blogroll');
+		}
+	}
+	
+	/**
+	 * Import the <outline> data from simplexml obj. $xml->body.
 	 */
 	private function import_opml( SimpleXMLElement $xml )
 	{
@@ -458,8 +603,8 @@ class Blogroll extends Plugin
 				$user = User::identify();
 				$params = array(
 					'title' => $title,
-					'pubdate' => isset($pubdate) ? $pubdate : HabariDateTime::date_create(),
-					'updated' => isset($updated) ? $updated : HabariDateTime::date_create(),
+					'pubdate' => isset($pubdate) ? HabariDateTime::date_create($pubdate) : HabariDateTime::date_create(),
+					'updated' => isset($updated) ? HabariDateTime::date_create($updated) : HabariDateTime::date_create(),
 					'content' => isset($content) ? $content : '',
 					'status' => Post::status('published'),
 					'content_type' => Post::type(self::CONTENT_TYPE),
