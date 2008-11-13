@@ -157,7 +157,7 @@ class Blogroll extends Plugin
 	
 	public function action_publish_post( Post $post, FormUI $form ) {
 		if ( $post->content_type == Post::type(self::CONTENT_TYPE) ) {
-			if($form->quick_url->value != '') {
+			if(isset($form->quick_url) && $form->quick_url->value != '') {
 				$data= $this->get_info_from_url($form->quick_url->value);
 				
 				if (!$data) {
