@@ -565,6 +565,7 @@ WP_IMPORT_STAGE2;
 	
 	/**
 	 * Import the <outline> data from simplexml obj. $xml->body.
+	 * @todo support tags/categories
 	 */
 	private function import_opml( SimpleXMLElement $xml )
 	{
@@ -641,7 +642,9 @@ WP_IMPORT_STAGE2;
 	}
 	
 	/**
-	 * @todo test this!!
+	 * Grabs update times from weblogs.com
+	 * @todo use update time from weblogs.com instead of gmdate.
+	 * @todo parse urls so we search for only '%host.domain.tld/path%' with no http://
 	 */
 	public function filter_blogroll_update_cron( $success )
 	{
@@ -653,7 +656,7 @@ WP_IMPORT_STAGE2;
 					$xml = new SimpleXMLElement( $request->get_response_body() );
 				}
 				catch ( Exception $e ) {
-					// log the failure here!
+					EventLog::log('Could not parse weblogs.com Changes XML file');
 					return false;
 				}
 				$atts = $xml->attributes();
@@ -661,17 +664,31 @@ WP_IMPORT_STAGE2;
 				foreach ( $xml->weblog as $weblog ) {
 					$atts = $weblog->attributes();
 					$match = array();
-					$match['url']= (string) $atts['url'];
-					$match['feedurl']= (string) $atts['rssUrl'];
+					$match['url'] = (string) $atts['url'];
+					$match['feedurl'] = (string) $atts['rssUrl'];
 					$update = $updated - (int) $atts['when'];
-					$post = Post::get(
-						array(
-							'any:info' => array( 'url' => $match['url'], 'feedurl' => $match['feedurl'] )
+					// use LIKE for info matching
+					$posts = DB::get_results(
+						'SELECT * FROM {posts}
+						WHERE
+						{posts}.id IN (
+							SELECT post_id FROM {postinfo}
+							WHERE ( (name = ? AND value LIKE ? ) OR (name = ? AND value LIKE ? ) )
 						)
+						AND status = ? AND content_type = ?',
+						array(
+							'url', "%{$match['url']}%",
+							'feedurl', "%{$match['feedurl']}%",
+							Post::status('published'), Post::type(self::CONTENT_TYPE)
+						),
+						'Post'
 					);
-					if ( $post instanceof Post ) {
-						$post->updated = HabariDateTime::create($update);
-						$post->update();
+					if ( $posts instanceof Posts && $posts->count() > 0 ) {
+						foreach ( $posts as $post ) {
+							$post->updated = HabariDateTime::create($update);
+							$post->update();
+							EventLog::log("Updated {$post->title} last update time from weblogs.com");
+						}
 					}
 				}
 				Options::set( 'blogroll__last_update', gmdate( 'D, d M Y G:i:s e' ) );
@@ -679,6 +696,7 @@ WP_IMPORT_STAGE2;
 			return true;
 		}
 		else {
+			EventLog::log('Could connect to weblogs.com');
 			return false;
 		}
 	}
