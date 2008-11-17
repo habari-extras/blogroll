@@ -137,7 +137,7 @@ class Blogroll extends Plugin
 					// other settings
 					$other_wrap = $form->append( 'fieldset', 'settings', _t('More Settings', 'blogroll') );
 					$update = $other_wrap->append(
-						'checkbox', 'use_update', 'option:blogroll__use_update',
+						'checkbox', 'use_updated', 'option:blogroll__use_updated',
 						_t( 'Use Weblogs.com to get updates? ', 'blogroll')
 					);
 					
