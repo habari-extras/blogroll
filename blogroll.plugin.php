@@ -14,14 +14,27 @@ class Blogroll extends Plugin
 	const VERSION = '0.6-beta';
 	const API_VERSION = 004;
 	const CONTENT_TYPE = 'blogroll';
-	
+
 	private $relationships = array(
 		'external' => 'External',
 		'nofollow' => 'Nofollow',
 		'bookmark' => 'Bookmark'
 	);
-	
-	private $info_fields = array( 'feedurl', 'ownername', 'relationship', 'url' );
+
+	private $info_fields = array(
+		'feedurl',
+		'ownername',
+		'relationship',
+		'relationships',
+		'url',
+		'xfn_identity',
+		'xfn_friendship',
+		'xfn_physical',
+		'xfn_professional',
+		'xfn_geographical',
+		'xfn_family',
+		'xfn_romantic'
+	);
 
 	public function info()
 	{
@@ -35,7 +48,7 @@ class Blogroll extends Plugin
 			'description' => 'Displays a blogroll on your blog'
 		);
 	}
-	
+
 	/**
 	 * Run activation routines, and setup default options.
 	 */
@@ -56,7 +69,7 @@ class Blogroll extends Plugin
 			Post::add_new_type(self::CONTENT_TYPE);
 		}
 	}
-	
+
 	/**
 	 * Run deactivation routines.
 	 */
@@ -68,7 +81,18 @@ class Blogroll extends Plugin
 			// should we remove type/posts here?
 		}
 	}
-	
+
+	public function filter_post_type_display($type, $foruse)
+	{
+		$names = array(
+			self::CONTENT_TYPE => array(
+				'singular' => _t( 'Link', self::CONTENT_TYPE ),
+				'plural' => _t( 'Links', self::CONTENT_TYPE ),
+			)
+		);
+		return isset($names[$type][$foruse]) ? $names[$type][$foruse] : $type;
+	}
+
 	public function action_init() {
 		// remove legacy tables and import
 		if ( Options::get('blogroll__db_version') || Options::get('blogroll__api_version') < 004 ) {
@@ -76,18 +100,27 @@ class Blogroll extends Plugin
 		}
 		$this->add_template( 'blogroll', dirname($this->get_file()) . '/templates/blogroll.php' );
 		$this->add_template( 'formcontrol_opml_file', dirname($this->get_file()) . '/templates/formcontrol_file.php' );
+		$this->add_template( 'blogroll__tabcontrol_checkboxes', dirname($this->get_file()) . '/templates/tabcontrol_checkboxes.php' );
+		$this->add_template( 'blogroll__tabcontrol_radio', dirname($this->get_file()) . '/templates/tabcontrol_radio.php' );
 	}
-	
+
+	public function action_admin_header( $theme )
+	{
+		if ( 'publish' == $theme->page && $theme->form->content_type->value == Post::type(self::CONTENT_TYPE) ) {
+			Stack::add( 'admin_stylesheet', array( $this->get_url() . '/blogroll.css', 'screen' ), 'blogroll' );
+		}
+	}
+
 	/**
-	 * 
+	 *
 	 */
-  	public function action_update_check()
-  	{
-    	Update::add( 'blogroll', '0420cf10-db83-11dc-95ff-0800200c9a66',  $this->info->version );
-  	}
-  	
-  	/**
-	 * 
+	public function action_update_check()
+	{
+		Update::add( 'blogroll', '0420cf10-db83-11dc-95ff-0800200c9a66',  $this->info->version );
+	}
+
+	/**
+	 *
 	 */
 	public function filter_plugin_config( $actions, $plugin_id )
 	{
@@ -97,9 +130,9 @@ class Blogroll extends Plugin
 		}
 		return $actions;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 */
 	public function action_plugin_ui( $plugin_id, $action )
 	{
@@ -107,7 +140,7 @@ class Blogroll extends Plugin
 			switch ( $action ) {
 				case _t( 'Configure', 'blogroll' ):
 					$form = new FormUI( 'blogroll' );
-					
+
 					// display settings
 					$display_wrap = $form->append( 'fieldset', 'display', _t('Display Settings', 'blogroll') );
 					$title = $display_wrap->append(
@@ -133,14 +166,14 @@ class Blogroll extends Plugin
 						'select', 'direction', 'option:blogroll__direction',
 						_t( 'Order: ', 'blogroll'), $orders
 					);
-					
+
 					// other settings
 					$other_wrap = $form->append( 'fieldset', 'settings', _t('More Settings', 'blogroll') );
 					$update = $other_wrap->append(
 						'checkbox', 'use_updated', 'option:blogroll__use_updated',
 						_t( 'Use Weblogs.com to get updates? ', 'blogroll')
 					);
-					
+
 					$form->append( 'submit', 'save', 'Save' );
 					$form->on_success( array($this, 'formui_submit') );
 					$form->out();
@@ -148,18 +181,18 @@ class Blogroll extends Plugin
 			}
 		}
 	}
-	
+
 	public function formui_submit( FormUI $form )
 	{
 		Session::notice( _t('Blogroll options saved.', 'blogroll') );
 		$form->save();
 	}
-	
+
 	public function action_publish_post( Post $post, FormUI $form ) {
 		if ( $post->content_type == Post::type(self::CONTENT_TYPE) ) {
 			if(isset($form->quick_url) && $form->quick_url->value != '') {
 				$data= $this->get_info_from_url($form->quick_url->value);
-				
+
 				if (!$data) {
 					Session::error( _t("Could not find information for {$form->quick_url->value}", 'blogroll') );
 					Utils::redirect( URL::get( 'admin', 'page=publish&content_type=link' ) );
@@ -172,37 +205,53 @@ class Blogroll extends Plugin
 				$post->info->feedurl= $data['feed'];
 				$post->slug= Utils::slugify($data['name']);
 				$post->status= Post::status('published');
-				
+
 			} else {
-				$post->info->url= $form->url->value;
-				$post->info->feedurl= $form->feedurl->value;
-				$post->info->ownername= $form->ownername->value;
-				$post->info->relationship= $form->relationship->value;
+				$relationships = array();
+				$relationships[] = $form->relationship->value;
+				if ( count($form->xfn_identity->value) > 0 ) {
+					$relationships = array_merge($form->xfn_identity->value, $relationships);
+				} else {
+					$relationships[] = $form->xfn_friendship->value;
+					$relationships = array_merge($form->xfn_physical->value, $relationships);
+					$relationships = array_merge($form->xfn_professional->value, $relationships);
+					$relationships[] = $form->xfn_geographical->value;
+					$relationships[] = $form->xfn_family->value;
+					$relationships = array_merge($form->xfn_romantic->value, $relationships);
+				}
+				$relationships = str_replace( ' null:null', '', implode(' ', $relationships) );
+
+				foreach ($this->info_fields as $field_name) {
+					$post->info->$field_name= $form->$field_name->value;
+				}
+				$post->info->relationships = $relationships;
 			}
 		}
 	}
-	
-	public function action_form_publish( FormUI $form, Post $post) {	
-		
+
+	public function action_form_publish( FormUI $form, Post $post) {
+
 		if( $form->content_type->value == Post::type(self::CONTENT_TYPE) ) {
-		
+
 			if ( !Controller::get_var('id') ) {
 				// Quick link button to automagically discover info
 				$quicklink_controls= $form->append('tabs', 'quicklink_controls');
-				
+
 				$quicklink_tab= $quicklink_controls->append('fieldset', 'quicklink_tab', _t('Quick Link'));
 				$quicklink_wrapper= $quicklink_tab->append('wrapper', 'quicklink_wrapper');
 				$quicklink_wrapper->class='container';
-				
+
 				$quicklink_wrapper->append('text', 'quick_url', 'null:null', _t('Quick URL'), 'tabcontrol_text');
 				$quicklink_wrapper->append('static', 'quick_url_info', '<p class="column span-15">Enter a url or feed url and other information will be automatically discovered.</p>');
 				$quicklink_wrapper->append('submit', 'addquick', _t('Add'), 'admincontrol_submit');
-				
+
 				$quicklink_controls->move_before($quicklink_controls, $form);
 			}
-			
+
 			// Remove fields we don't need
-			$form->silos->remove();
+			if ( $form->silos instanceof FormControl ) {
+				$form->silos->remove();
+			}
 			$form->comments_enabled->remove();
 			$form->newslug->remove();
 			if($form->post_permalink != NULL) $form->post_permalink->remove();
@@ -213,34 +262,83 @@ class Blogroll extends Plugin
 			$form->url->tabindex = 2;
 			$form->url->value = $post->info->url;
 			$form->url->move_after($form->title);
-			
+
 			// Retitle fields
 			$form->title->caption= _t('Blog Name');
 			$form->content->caption= _t('Description');
 			$form->content->tabindex= 3;
 			$form->tags->tabindex= 4;
-			
+
 			// Create the extras splitter & fields
 			$extras = $form->settings;
 
 			$extras->append('text', 'feedurl', 'null:null', _t('Feed URL'), 'tabcontrol_text');
 			$extras->feedurl->value = $post->info->feedurl;
-			
+
 			$extras->append('text', 'ownername', 'null:null', _t('Owner Name'), 'tabcontrol_text');
 			$extras->ownername->value = $post->info->ownername;
-			
+
 			$relationships = Plugins::filter( 'blogroll_relationships', $this->relationships );
 			$extras->append('select', 'relationship', 'null:null', _t('Relationship'), $relationships, 'tabcontrol_select');
 			$extras->relationship->value = $post->info->relationship;
+
+			// Create the XFN Selector
+			$xfnselector = $form->publish_controls->append('fieldset', 'xfnselector', _t('XFN'));
+
+			$xfnselector->append('checkboxes', 'xfn_identity', 'null:null', _t('Identity'), array('me' => _t('Another web address of mine')), 'blogroll__tabcontrol_checkboxes');
+			$xfnselector->xfn_identity->value = $post->info->xfn_identity;
+
+			$xfnselector->append('radio', 'xfn_friendship', 'null:null', _t('Friendship'), array(
+				'contact' => _t('Contact'),
+				'acquaintance' => _t('Acquaintance'),
+				'friend' => _t('Friend'),
+				'null:null' => _t('None')
+			), 'blogroll__tabcontrol_radio');
+			$xfnselector->xfn_friendship->value = $post->info->xfn_friendship;
+
+			$xfnselector->append('checkboxes', 'xfn_physical', 'null:null', _t('Physical'), array('met' => _t('Met')), 'blogroll__tabcontrol_checkboxes');
+			$xfnselector->xfn_physical->value = $post->info->xfn_physical;
+
+			$xfnselector->append('checkboxes', 'xfn_professional', 'null:null', _t('Professional'), array(
+				'co-worker' => _t('Co-worker'),
+				'colleague' => _t('Colleague'),
+			), 'blogroll__tabcontrol_checkboxes');
+			$xfnselector->xfn_professional->value = $post->info->xfn_professional;
+
+			$xfnselector->append('radio', 'xfn_geographical', 'null:null', _t('Geographical'), array(
+				'co-resident' => _t('Co-resident'),
+				'neighbor' => _t('Neighbor'),
+				'null:null' => _t('None')
+			), 'blogroll__tabcontrol_radio');
+			$xfnselector->xfn_geographical->value = $post->info->xfn_geographical;
+
+			$xfnselector->append('radio', 'xfn_family', 'null:null', _t('Family'), array(
+				'child' => _t('Child'),
+				'parent' => _t('Parent'),
+				'sibling' => _t('Sibling'),
+				'spouse' => _t('Spouse'),
+				'kin' => _t('Kin'),
+				'null:null' => _t('None')
+			), 'blogroll__tabcontrol_radio');
+			$xfnselector->xfn_family->value = $post->info->xfn_family;
+
+			$xfnselector->append('checkboxes', 'xfn_romantic', 'null:null', _t('Romantic'), array(
+				'muse' => _t('Muse'),
+				'crush' => _t('Crush'),
+				'date' => _t('Date'),
+				'sweetheart' => _t('Sweetheart')
+			), 'blogroll__tabcontrol_checkboxes');
+			$xfnselector->xfn_romantic->value = $post->info->xfn_romantic;
+
 		}
 	}
-	
+
 	public static function get_info_from_url( $url )
-	{		
+	{
 		$info= array();
 		$data= RemoteRequest::get_contents( $url );
 		$feed= self::get_feed_location( $data, $url );
-		
+
 		if ( $feed ) {
 			$info['feed']= $feed;
 			$data= RemoteRequest::get_contents( $feed );
@@ -276,7 +374,7 @@ class Blogroll extends Plugin
 		}
 		return $info;
 	}
-	
+
 	public static function get_feed_location( $html, $url )
 	{
 		preg_match_all( '/<link\s+(.*?)\s*\/?>/si', $html, $matches );
@@ -324,27 +422,27 @@ class Blogroll extends Plugin
 		}
 		return false;
 	}
-	
+
 	public function theme_show_blogroll( $theme, $user_params = array() )
 	{
 		$theme->blogroll_title = Options::get( 'blogroll__list_title' );
-		
+
 		// Build the params array to pass it to the get() method
 		$order_by = Options::get( 'blogroll__sort_by' );
 		$direction = Options::get( 'blogroll__direction');
-		
+
 		$params = array(
 			'limit' => Options::get( 'blogroll__max_links' ),
 			'orderby' => $order_by . ' ' . $direction,
 			'status' => Post::status('published'),
 			'content_type' => Post::type(self::CONTENT_TYPE),
 		);
-		
+
 		$theme->blogs = Posts::get( $params );
-		
+
 		return $theme->fetch( 'blogroll' );
 	}
-	
+
 	public function filter_habminbar( $menu )
 	{
 		$menu['blogroll']= array( 'Blogroll', URL::get( 'admin', 'page=publish&content_type='.self::CONTENT_TYPE ) );
@@ -366,17 +464,17 @@ class Blogroll extends Plugin
 		));
 		return $rules;
 	}
-	
+
 	public function action_handler_blogroll_opml( array $handler_vars )
 	{
 		$opml = new SimpleXMLElement( '<opml version="1.1"></opml>' );
-		
+
 		$head = $opml->addChild( 'head' );
 		$head->addChild( 'title', Options::get( 'title' ) );
 		$head->addChild( 'dateCreated', gmdate( 'D, d M Y G:i:s e' ) );
-		
+
 		$body = $opml->addChild( 'body' );
-		
+
 		$blogs = Posts::get(
 			array(
 				'content_type' => Post::type(self::CONTENT_TYPE),
@@ -384,7 +482,7 @@ class Blogroll extends Plugin
 				'status' => Post::status('published')
 			)
 		);
-		
+
 		foreach ( $blogs as $blog ) {
 			$outline = $body->addChild( 'outline' );
 			$outline->addAttribute( 'text', $blog->title );
@@ -399,17 +497,17 @@ class Blogroll extends Plugin
 		}
 		$opml = Plugins::filter( 'blogroll_opml', $opml, $handler_vars );
 		$opml = $opml->asXML();
-		
+
 		ob_clean();
 		header( 'Content-Type: application/opml+xml' );
 		print $opml;
 	}
-	
+
 	public function filter_import_names( $import_names )
 	{
 		return array_merge( $import_names, array(_t('BlogRoll OPML file', 'blogroll')) );
 	}
-	
+
 	/**
 	 * Plugin filter that supplies the UI for the Blogroll importer
 	 *
@@ -426,7 +524,7 @@ class Blogroll extends Plugin
 			// Must return $stageoutput as it may contain the stage HTML of another importer
 			return $stageoutput;
 		}
-		
+
 		$inputs = array();
 
 		// Validate input from various stages...
@@ -462,7 +560,7 @@ class Blogroll extends Plugin
 
 		return $output;
 	}
-	
+
 	private function stage1( array $inputs )
 	{
 		$default_values = array(
@@ -475,7 +573,7 @@ class Blogroll extends Plugin
 		if( $warning != '' ) {
 			Session::error($warning);
 		}
-		
+
 		$output = <<< BR_IMPORT_STAGE1
 			</form><form method="post" action="" enctype="multipart/form-data">
 			<p>Please provide the URI, or upload your OPML file</p>
@@ -490,14 +588,14 @@ class Blogroll extends Plugin
 				<span class="pct25 helptext">Or you can upload a OPML file to import.</span>
 			</div>
 			<input type="hidden" name="stage" value="1">
-			
+
 			<div class="item formcontrol"  id="apply"><input type="submit" name="import" class="button" value="Import">
 			</div>
 
 BR_IMPORT_STAGE1;
 		return $output;
 	}
-	
+
 	private function stage2( array $inputs )
 	{
 		$default_values = array(
@@ -530,13 +628,13 @@ BR_IMPORT_STAGE1;
 WP_IMPORT_STAGE2;
 		return $output;
 	}
-	
+
 	public function action_auth_ajax_blogroll_import_opml( ActionHandler $handler )
 	{
 		$valid_fields = array( 'opml_url', 'opml_file' );
 		$inputs = array_intersect_key( $_POST, array_flip( $valid_fields ) );
 		extract( $inputs );
-		
+
 		if ( ! empty($opml_url) ) {
 			$file = RemoteRequest::get_contents( $opml_url );
 		}
@@ -562,7 +660,7 @@ WP_IMPORT_STAGE2;
 			_e('Sorry, could not parse that OPML file. It may be malformed.', 'blogroll');
 		}
 	}
-	
+
 	/**
 	 * Import the <outline> data from simplexml obj. $xml->body.
 	 * @todo support tags/categories
@@ -572,7 +670,7 @@ WP_IMPORT_STAGE2;
 		if ( ! $xml->outline ) {
 			throw new Exception('Not a valid OPML resource');
 		}
-		
+
 		$count = 0;
 		foreach ( $xml->outline as $outline ) {
 			$atts = (array) $outline->attributes();
@@ -591,7 +689,7 @@ WP_IMPORT_STAGE2;
 					'user_id' => $user->id,
 				);
 				$blog = Post::create($params);
-				
+
 				foreach($this->info_fields as $field ) {
 					if ( isset(${$field}) && ${$field} ) {
 						$blog->info->{$field} = ${$field};
@@ -606,7 +704,7 @@ WP_IMPORT_STAGE2;
 		}
 		return $count;
 	}
-	
+
 	/**
 	 * Maps standard OPML link attributes to Post fields.
 	 */
@@ -640,7 +738,7 @@ WP_IMPORT_STAGE2;
 		}
 		return $valid_atts;
 	}
-	
+
 	/**
 	 * Grabs update times from weblogs.com
 	 * @todo use update time from weblogs.com instead of gmdate.
@@ -700,26 +798,26 @@ WP_IMPORT_STAGE2;
 			return false;
 		}
 	}
-	
+
 	public function upgrade_pre_004()
 	{
 		DB::register_table('blogroll');
 		DB::register_table('bloginfo');
 		DB::register_table('tag2blog');
-		
+
 		if ( ! in_array( DB::table('blogroll'), DB::list_tables() ) ) {
 			Options::set( 'blogroll__api_version', self::API_VERSION );
 			return;
 		}
-		
+
 		Post::add_new_type(self::CONTENT_TYPE);
-		
+
 		$opml = new SimpleXMLElement( '<opml version="1.1"></opml>' );
 		$head = $opml->addChild( 'head' );
 		$head->addChild( 'title', Options::get( 'title' ) );
 		$head->addChild( 'dateCreated', gmdate( 'D, d M Y G:i:s e' ) );
 		$body = $opml->addChild( 'body' );
-		
+
 		$blogs = DB::get_results("SELECT * FROM {blogroll}", array());
 		foreach ( $blogs as $blog ) {
 			$outline = $body->addChild( 'outline' );
@@ -751,7 +849,7 @@ WP_IMPORT_STAGE2;
 		catch (Exception $e) {
 			EventLog::log( _t('Could Import previous data. please import manually and drop tables.', 'blogroll') );
 		}
-		
+
 		Options::delete('blogroll__db_version');
 		Options::set( 'blogroll__api_version', self::API_VERSION );
 		Options::set( 'blogroll__sort_by', 'id' );
