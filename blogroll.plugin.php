@@ -86,8 +86,8 @@ class Blogroll extends Plugin
 	{
 		$names = array(
 			self::CONTENT_TYPE => array(
-				'singular' => _t( 'Link', self::CONTENT_TYPE ),
-				'plural' => _t( 'Links', self::CONTENT_TYPE ),
+				'singular' => _t( 'Blogroll Link', self::CONTENT_TYPE ),
+				'plural' => _t( 'Blogroll', self::CONTENT_TYPE ),
 			)
 		);
 		return isset($names[$type][$foruse]) ? $names[$type][$foruse] : $type;
