@@ -12,7 +12,7 @@
 class Blogroll extends Plugin
 {
 	const VERSION = '0.6-beta';
-	const API_VERSION = 004;
+	const API_VERSION = 005;
 	const CONTENT_TYPE = 'blogroll';
 
 	private $relationships = array(
