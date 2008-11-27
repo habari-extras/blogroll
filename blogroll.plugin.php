@@ -794,7 +794,7 @@ WP_IMPORT_STAGE2;
 			return true;
 		}
 		else {
-			EventLog::log('Could connect to weblogs.com');
+			EventLog::log('Could not connect to weblogs.com');
 			return false;
 		}
 	}
@@ -847,7 +847,7 @@ WP_IMPORT_STAGE2;
 			);
 		}
 		catch (Exception $e) {
-			EventLog::log( _t('Could Import previous data. please import manually and drop tables.', 'blogroll') );
+			EventLog::log( _t('Could not Import previous data. please import manually and drop tables.', 'blogroll') );
 		}
 
 		Options::delete('blogroll__db_version');
