@@ -252,9 +252,9 @@ class Blogroll extends Plugin
 			if ( $form->silos instanceof FormControl ) {
 				$form->silos->remove();
 			}
-			$form->comments_enabled->remove();
-			$form->newslug->remove();
-			if($form->post_permalink != NULL) $form->post_permalink->remove();
+			//$form->comments_enabled->remove();
+			//$form->newslug->remove();
+			//if($form->post_permalink != NULL) $form->post_permalink->remove();
 
 			// Add the url field
 			$form->append('text', 'url', 'null:null', _t('URL'), 'admincontrol_text');
