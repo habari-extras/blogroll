@@ -772,12 +772,12 @@ WP_IMPORT_STAGE2;
 					}
 				}
 				Options::set( 'blogroll__last_update', gmdate( 'D, d M Y G:i:s e' ) );
+			} 
+			else {
+				EventLog::log('Could not connect to weblogs.com');
+				return false;
 			}
 			return true;
-		}
-		else {
-			EventLog::log('Could not connect to weblogs.com');
-			return false;
 		}
 	}
 
