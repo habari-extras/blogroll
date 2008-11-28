@@ -191,24 +191,23 @@ class Blogroll extends Plugin
 		if ( $post->content_type == Post::type(self::CONTENT_TYPE) ) {
 			if(isset($form->quick_url) && $form->quick_url->value != '') {
 				$data= $this->get_info_from_url($form->quick_url->value);
-
-				if (!$data) {
-					Session::error( _t("Could not find information for {$form->quick_url->value}", 'blogroll') );
-					Utils::redirect( URL::get( 'admin', 'page=publish&content_type=blogroll' ) );
-					exit;
+				if ( $data ) {
+					$data = array_map( create_function('$a', 'return InputFilter::filter($a);'), $data );
+					$post->title= $data['name'];
+					$post->info->url= $data['url'];
+					$post->content= $data['description'];
+					$post->info->feedurl= $data['feed'];
+					$post->slug= Utils::slugify($data['name']);
+					$post->status= Post::status('published');
 				}
-				$data = array_map( create_function('$a', 'return InputFilter::filter($a);'), $data );
-				$post->title= $data['name'];
-				$post->info->url= $data['url'];
-				$post->content= $data['description'];
-				$post->info->feedurl= $data['feed'];
-				$post->slug= Utils::slugify($data['name']);
-				$post->status= Post::status('published');
-
-			} else {
-				foreach ($this->info_fields as $field_name) {
-					$post->info->$field_name= $form->$field_name->value;
+				else {
+					Session::error( _t("Could not find information for {$form->quick_url->value}. Please enter the information manually.", 'blogroll') );
+					$post->info->url = $form->quick_url->value;
+					return;
 				}
+			}
+			foreach ($this->info_fields as $field_name) {
+				$post->info->$field_name= $form->$field_name->value;
 			}
 		}
 	}
@@ -772,13 +771,14 @@ WP_IMPORT_STAGE2;
 					}
 				}
 				Options::set( 'blogroll__last_update', gmdate( 'D, d M Y G:i:s e' ) );
+				return true;
 			} 
 			else {
 				EventLog::log('Could not connect to weblogs.com');
 				return false;
 			}
-			return true;
 		}
+		return $success;
 	}
 
 	public function upgrade_pre_004()
