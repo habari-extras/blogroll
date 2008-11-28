@@ -194,7 +194,7 @@ class Blogroll extends Plugin
 
 				if (!$data) {
 					Session::error( _t("Could not find information for {$form->quick_url->value}", 'blogroll') );
-					Utils::redirect( URL::get( 'admin', 'page=publish&content_type=link' ) );
+					Utils::redirect( URL::get( 'admin', 'page=publish&content_type=blogroll' ) );
 					exit;
 				}
 				$data = array_map( create_function('$a', 'return InputFilter::filter($a);'), $data );
