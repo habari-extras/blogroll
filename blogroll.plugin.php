@@ -202,6 +202,8 @@ class Blogroll extends Plugin
 				}
 				else {
 					Session::error( _t("Could not find information for {$form->quick_url->value}. Please enter the information manually.", 'blogroll') );
+					$title = parse_url($form->quick_url->value, PHP_URL_HOST);
+					$post->title = ( $title ) ? $title : $form->quick_url->value;
 					$post->info->url = $form->quick_url->value;
 					return;
 				}
