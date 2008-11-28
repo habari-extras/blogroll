@@ -25,7 +25,6 @@ class Blogroll extends Plugin
 		'feedurl',
 		'ownername',
 		'relationship',
-		'relationships',
 		'url',
 		'xfn_identity',
 		'xfn_friendship',
@@ -207,24 +206,9 @@ class Blogroll extends Plugin
 				$post->status= Post::status('published');
 
 			} else {
-				$relationships = array();
-				$relationships[] = $form->relationship->value;
-				if ( count($form->xfn_identity->value) > 0 ) {
-					$relationships = array_merge($form->xfn_identity->value, $relationships);
-				} else {
-					$relationships[] = $form->xfn_friendship->value;
-					$relationships = array_merge($form->xfn_physical->value, $relationships);
-					$relationships = array_merge($form->xfn_professional->value, $relationships);
-					$relationships[] = $form->xfn_geographical->value;
-					$relationships[] = $form->xfn_family->value;
-					$relationships = array_merge($form->xfn_romantic->value, $relationships);
-				}
-				$relationships = str_replace( ' null:null', '', implode(' ', $relationships) );
-
 				foreach ($this->info_fields as $field_name) {
 					$post->info->$field_name= $form->$field_name->value;
 				}
-				$post->info->relationships = $relationships;
 			}
 		}
 	}
@@ -252,9 +236,7 @@ class Blogroll extends Plugin
 			if ( $form->silos instanceof FormControl ) {
 				$form->silos->remove();
 			}
-			//$form->comments_enabled->remove();
-			//$form->newslug->remove();
-			//if($form->post_permalink != NULL) $form->post_permalink->remove();
+			$form->comments_enabled->value = 0;
 
 			// Add the url field
 			$form->append('text', 'url', 'null:null', _t('URL'), 'admincontrol_text');
