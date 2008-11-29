@@ -315,7 +315,25 @@ class Blogroll extends Plugin
 
 		}
 	}
-
+	
+	public function filter_post_xfn_relationships( $relationships, Post $post )
+	{
+		if ($post->content_type == Post::type(self::CONTENT_TYPE)) {
+			$rel = array($relationships);
+			foreach( $this->info_fields as $info_field ) {
+				if (strpos($info_field, 'xfn_') === 0 && $post->info->$info_field){
+					if (is_array($post->info->$info_field)) {
+						$rel = array_merge($rel, $post->info->$info_field);
+					}
+					else {
+						$rel[] = $post->info->$info_field;
+					}
+				}
+			}
+			return implode(' ', $rel);
+		}
+	}
+	
 	public static function get_info_from_url( $url )
 	{
 		$info= array();
@@ -426,7 +444,7 @@ class Blogroll extends Plugin
 		return $theme->fetch( 'blogroll' );
 	}
 
-	public function filter_habminbar( $menu )
+	public function filter_habminbar( array $menu )
 	{
 		$menu['blogroll']= array( 'Blogroll', URL::get( 'admin', 'page=publish&content_type='.self::CONTENT_TYPE ) );
 		return $menu;
@@ -486,7 +504,7 @@ class Blogroll extends Plugin
 		print $opml;
 	}
 
-	public function filter_import_names( $import_names )
+	public function filter_import_names( array $import_names )
 	{
 		return array_merge( $import_names, array(_t('BlogRoll OPML file', 'blogroll')) );
 	}
