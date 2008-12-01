@@ -319,18 +319,26 @@ class Blogroll extends Plugin
 	public function filter_post_xfn_relationships( $relationships, Post $post )
 	{
 		if ($post->content_type == Post::type(self::CONTENT_TYPE)) {
-			$rel = array($relationships);
-			foreach( $this->info_fields as $info_field ) {
-				if (strpos($info_field, 'xfn_') === 0 && $post->info->$info_field){
-					if (is_array($post->info->$info_field)) {
-						$rel = array_merge($rel, $post->info->$info_field);
-					}
-					else {
-						$rel[] = $post->info->$info_field;
+			$xfn_rel = array($relationships);
+
+			// "me" is exclusive of all other XFN values.
+			if ( is_array($post->info->xfn_identity) && count($post->info->xfn_identity) > 0 ) {
+				$xfn_rel = array_merge($post->info->xfn_identity, $xfn_rel);
+			}
+			else {
+				foreach( $this->info_fields as $info_field ) {
+					if ( strpos( $info_field, 'xfn_' ) === 0 && $post->info->$info_field ) {
+						if ( is_array($post->info->$info_field) ) {
+							$xfn_rel = array_merge( $post->info->$info_field, $xfn_rel );
+						}
+						else {
+							$xfn_rel[] = $post->info->$info_field;
+						}
 					}
 				}
 			}
-			return implode(' ', $rel);
+
+			return str_replace( ' null:null', '', implode(' ', $xfn_rel) );
 		}
 	}
 	
