@@ -315,7 +315,7 @@ class Blogroll extends Plugin
 
 		}
 	}
-	
+
 	public function filter_post_xfn_relationships( $relationships, Post $post )
 	{
 		if ($post->content_type == Post::type(self::CONTENT_TYPE)) {
@@ -341,7 +341,7 @@ class Blogroll extends Plugin
 			return str_replace( ' null:null', '', implode(' ', $xfn_rel) );
 		}
 	}
-	
+
 	public static function get_info_from_url( $url )
 	{
 		$info= array();
@@ -641,7 +641,7 @@ WP_IMPORT_STAGE2;
 	public function action_auth_ajax_blogroll_import_opml( ActionHandler $handler )
 	{
 		$valid_fields = array( 'opml_url', 'opml_file' );
-		$inputs = array_intersect_key( $_POST, array_flip( $valid_fields ) );
+		$inputs = array_intersect_key( $_POST->getArrayCopy(), array_flip( $valid_fields ) );
 		extract( $inputs );
 
 		if ( ! empty($opml_url) ) {
@@ -800,7 +800,7 @@ WP_IMPORT_STAGE2;
 				}
 				Options::set( 'blogroll__last_update', gmdate( 'D, d M Y G:i:s e' ) );
 				return true;
-			} 
+			}
 			else {
 				EventLog::log('Could not connect to weblogs.com');
 				return false;
