@@ -1,0 +1,9 @@
+<plugin>
+	<name>Blogroll</name>
+	<url>http://wiki.habariproject.org/en/plugins/blogroll</url>
+	<author>Habari Community</author>
+	<authorurl>http://habariproject.org/</authorurl>
+	<license>Apache License 2.0</license>
+	<description>Displays a blogroll on your blog</description>
+</plugin>
+
