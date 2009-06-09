@@ -1,9 +1,10 @@
-<plugin>
+<?xml version="1.0" encoding="utf-8" ?>
+<pluggable type="plugin">
 	<name>Blogroll</name>
+	<license url="http://www.apache.org/licenses/LICENSE-2.0.html">Apache Software License 2.0</license>
+	<author url="http://habariproject.org/">Habari Community</author>
+	<version>0.6</version>
 	<url>http://wiki.habariproject.org/en/plugins/blogroll</url>
-	<author>Habari Community</author>
-	<authorurl>http://habariproject.org/</authorurl>
-	<license>Apache License 2.0</license>
-	<description>Displays a blogroll on your blog</description>
-</plugin>
-
+	<description><![CDATA[Displays a blogroll on your blog.]]></description>
+	<copyright>2009</copyright>
+</pluggable>

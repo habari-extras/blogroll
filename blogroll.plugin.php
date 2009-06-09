@@ -35,19 +35,6 @@ class Blogroll extends Plugin
 		'xfn_romantic'
 	);
 
-	public function info()
-	{
-		return array(
-			'name' => 'Blogroll',
-			'version' => self::VERSION,
-			'url' => 'http://wiki.habariproject.org/en/plugins/blogroll',
-			'author' => 'Habari Community',
-			'authorurl' => 'http://habariproject.org/',
-			'license' => 'Apache License 2.0',
-			'description' => 'Displays a blogroll on your blog'
-		);
-	}
-
 	/**
 	 * Run activation routines, and setup default options.
 	 */
