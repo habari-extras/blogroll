@@ -35,6 +35,14 @@
 
 			<p>To export your blogroll as opml, simply navigate to the public URL ${habari_root}/blogroll/opml. You can
 			use this link as an export or for things like "Sources" in Liferea.</p>
+
+			<h3>Display Blogroll</h3>
+			<p>To display your Blogroll, simply add the following template tag to your theme:</p>
+			<pre>&lt;?php $theme->display_blogroll(); ?&gt;</pre>
+
+			<p>You can change the template it uses for display by copying "templates/blogroll.php", in the
+			bloroll plugin folder, to your themes root folder, and modifying that template to your liking. Also
+			note that some themes already provide a customized blogroll template.</p>
 		]]></value>
 	</help>
 </pluggable>
