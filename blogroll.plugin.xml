@@ -5,6 +5,36 @@
 	<author url="http://habariproject.org/">Habari Community</author>
 	<version>0.6</version>
 	<url>http://wiki.habariproject.org/en/plugins/blogroll</url>
-	<description><![CDATA[Displays a blogroll on your blog.]]></description>
+	<description><![CDATA[Display and manage a blogroll on your blog.]]></description>
 	<copyright>2009</copyright>
+	
+	<help>
+		<value><![CDATA[
+			<h3>Create Link</h3>
+			<p>To create a new Blogroll Link, go to "New" -&gt; "Blogroll Link" in the menu.
+			You create the link just as you would create a normal post. If you expand the "Settings"
+			and "XFN Relationship" sliders, you can add additional information about your link.</p>
+			
+			<p>You can	additionally add a "Quick Link", at the top, by entering the URL of your link, and Blogroll
+			will attempt to discover information about that URL automatically.</p>
+			
+			<h3>Manage Blogroll</h3>
+			<p>Managing Blogroll Links is done exactly the same as managing standard posts; go to "Manage"
+			-&gt; "Blogroll" in the menu. Here you can edit, delete, etc. your Blogroll Links.</p>
+			
+			<h3>Configure Blogroll</h3>
+			<p><strong>NOTE:</strong> if you choose to "Use Weblogs.com to get updates" it can <strong>cause severe
+			load on your database</strong>. It is recomend you use this option with caution.</p>
+
+			<p>In the configure screen, You can choose how the Blogroll will be displayed in your theme.</p>
+
+			<h3>Import/Export OPML</h3>
+			<p>You can import an OPML file from other applications, such as Liferea, Feed on Feeds, Google Reader, etc.
+			Go to "Import" in the menu and select "BlogRoll OPML File" as the type of import to preform. Here you can
+			upload or link directly to any OPML file.</p>
+
+			<p>To export your blogroll as opml, simply navigate to the public URL ${habari_root}/blogroll/opml. You can
+			use this link as an export or for things like "Sources" in Liferea.</p>
+		]]></value>
+	</help>
 </pluggable>
