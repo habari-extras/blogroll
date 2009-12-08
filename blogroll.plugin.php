@@ -672,6 +672,9 @@ WP_IMPORT_STAGE2;
 			$atts = (array) $outline->attributes();
 			$params = $this->map_opml_atts( $atts['@attributes'] );
 			if ( isset( $params['url'] ) && isset( $params['title'] ) ) {
+				if ( count( Posts::get( array( 'all:info' => array('url' => $params['url'] ) ) ) ) >= 1 ) {
+					continue;
+				}
 				$params = array_map( create_function('$a', 'return InputFilter::filter($a);'), $params );
 				extract($params);
 				$user = User::identify();
