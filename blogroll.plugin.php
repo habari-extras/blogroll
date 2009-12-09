@@ -176,8 +176,11 @@ class Blogroll extends Plugin
 
 	public function action_publish_post( Post $post, FormUI $form ) {
 		if ( $post->content_type == Post::type(self::CONTENT_TYPE) ) {
+			foreach ($this->info_fields as $field_name) {
+				$post->info->$field_name= $form->$field_name->value;
+			}
 			if(isset($form->quick_url) && $form->quick_url->value != '') {
-				$data= $this->get_info_from_url($form->quick_url->value);
+				$data = $this->get_info_from_url($form->quick_url->value);
 				if ( $data ) {
 					$data = array_map( create_function('$a', 'return InputFilter::filter($a);'), $data );
 					$post->title= $data['name'];
@@ -194,9 +197,6 @@ class Blogroll extends Plugin
 					$post->info->url = $form->quick_url->value;
 					return;
 				}
-			}
-			foreach ($this->info_fields as $field_name) {
-				$post->info->$field_name= $form->$field_name->value;
 			}
 		}
 	}
@@ -366,7 +366,7 @@ class Blogroll extends Plugin
 			}
 		}
 		catch ( Exception $e ) {
-			return array();
+			return null;
 		}
 		return $info;
 	}
@@ -660,6 +660,7 @@ WP_IMPORT_STAGE2;
 	/**
 	 * Import the <outline> data from simplexml obj. $xml->body.
 	 * @todo support tags/categories
+	 * @todo don't be strict on duplicate matching.
 	 */
 	private function import_opml( SimpleXMLElement $xml )
 	{
