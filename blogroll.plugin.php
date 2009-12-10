@@ -488,7 +488,9 @@ class Blogroll extends Plugin
 			$outline->addAttribute( 'relationship', $blog->info->relationship );
 			$outline->addAttribute( 'pubdate', $blog->pubdate );
 			$outline->addAttribute( 'updated', $blog->updated );
-			$outline->addAttribute( 'description', htmlentities($blog->content, ENT_QUOTES, 'UTF-8') );
+			if ( $blog->content ) {
+				$outline->addAttribute( 'description', htmlentities($blog->content, ENT_QUOTES, 'UTF-8') );
+			}
 			$outline->addAttribute( 'type', 'link' );
 		}
 		$opml = Plugins::filter( 'blogroll_opml', $opml, $handler_vars );
