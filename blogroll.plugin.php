@@ -461,6 +461,11 @@ class Blogroll extends Plugin
 		return $rules;
 	}
 
+	/**
+	 * Handler for opml output
+	 * 
+	 * @todo add tags
+	 */
 	public function action_handler_blogroll_opml( array $handler_vars )
 	{
 		$opml = new SimpleXMLElement( '<opml version="1.1"></opml>' );
@@ -481,15 +486,21 @@ class Blogroll extends Plugin
 
 		foreach ( $blogs as $blog ) {
 			$outline = $body->addChild( 'outline' );
-			$outline->addAttribute( 'text', $blog->title );
-			$outline->addAttribute( 'htmlUrl', $blog->info->url );
-			$outline->addAttribute( 'xmlUrl', $blog->info->feedurl );
-			$outline->addAttribute( 'ownername', $blog->info->ownername );
-			$outline->addAttribute( 'relationship', $blog->info->relationship );
-			$outline->addAttribute( 'pubdate', $blog->pubdate );
-			$outline->addAttribute( 'updated', $blog->updated );
-			if ( $blog->content ) {
-				$outline->addAttribute( 'description', htmlentities($blog->content, ENT_QUOTES, 'UTF-8') );
+			$data = array(
+				'text' => $blog->title,
+				'htmlUrl' => $blog->info->url,
+				'xmlUrl' => $blog->info->feedurl,
+				'ownername' => $blog->info->ownername,
+				'relationship' => $blog->info->relationship,
+				'pubdate' => $blog->pubdate,
+				'updated' => $blog->updated,
+				'description' => htmlentities($blog->content, ENT_QUOTES, 'UTF-8')
+			);
+			
+			foreach ( $data as $att => $value ) {
+				if ( $value ) {
+					$outline->addAttribute( $att, $value );
+				}
 			}
 			$outline->addAttribute( 'type', 'link' );
 		}
