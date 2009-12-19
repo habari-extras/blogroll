@@ -38,22 +38,20 @@ class Blogroll extends Plugin
 	/**
 	 * Run activation routines, and setup default options.
 	 */
-	public function action_plugin_activation( $file )
+	public function action_plugin_activation()
 	{
-		if ( $file == str_replace( '\\','/', $this->get_file() ) ) {
-			if ( ! CronTab::get_cronjob( 'blogroll:update' ) ) {
-				CronTab::add_hourly_cron( 'blogroll:update', 'blogroll_update_cron', 'Updates the blog updated timestamp from weblogs.com' );
-			}
-
-			Options::set( 'blogroll__api_version', self::API_VERSION );
-			Options::set( 'blogroll__use_updated', true );
-			Options::set( 'blogroll__max_links', '10' );
-			Options::set( 'blogroll__sort_by', 'id' );
-			Options::set( 'blogroll__direction', 'ASC' );
-			Options::set( 'blogroll__list_title', 'Blogroll' );
-
-			Post::add_new_type(self::CONTENT_TYPE);
+		if ( ! CronTab::get_cronjob( 'blogroll:update' ) ) {
+			CronTab::add_hourly_cron( 'blogroll:update', 'blogroll_update_cron', 'Updates the blog updated timestamp from weblogs.com' );
 		}
+
+		Options::set( 'blogroll__api_version', self::API_VERSION );
+		Options::set( 'blogroll__use_updated', true );
+		Options::set( 'blogroll__max_links', '10' );
+		Options::set( 'blogroll__sort_by', 'id' );
+		Options::set( 'blogroll__direction', 'ASC' );
+		Options::set( 'blogroll__list_title', 'Blogroll' );
+
+		Post::add_new_type(self::CONTENT_TYPE);
 	}
 
 	/**
@@ -61,11 +59,8 @@ class Blogroll extends Plugin
 	 */
 	public function action_plugin_deactivation( $file )
 	{
-		if ( $file == str_replace( '\\','/', $this->get_file() ) ) {
-			CronTab::delete_cronjob('blogroll:update');
-			Options::delete('blogroll__api_version');
-			// should we remove type/posts here?
-		}
+		CronTab::delete_cronjob('blogroll:update');
+		Options::delete('blogroll__api_version');
 	}
 
 	public function filter_post_type_display($type, $foruse)
