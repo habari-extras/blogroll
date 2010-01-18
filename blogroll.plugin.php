@@ -461,7 +461,7 @@ class Blogroll extends Plugin
 	 * 
 	 * @todo add tags
 	 */
-	public function action_handler_blogroll_opml( array $handler_vars )
+	public function action_handler_blogroll_opml( SuperGlobal $handler_vars )
 	{
 		$opml = new SimpleXMLElement( '<opml version="1.1"></opml>' );
 
