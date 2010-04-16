@@ -1,8 +1,8 @@
-<h3><?php echo $comment->title; ?></h3>
+<h3><?php echo $content->title; ?></h3>
 <ul>
 	<?php $links = $content->list;
-	Utils::debug( $links );
-	foreach( $links as $label => $href ): ?>
-	<li><a href="<?php echo $label; ?>"><?php echo $href; ?></a></li>
+
+	foreach( $links as $link ): ?>
+		<li class="vcard"><a href="<?php echo $link[ 'url' ]; ?>" class="url" title="<?php echo $link[ 'content' ]; ?>" rel="<?php echo $link[ 'relationship' ] ?>"><?php echo $link[ 'title' ]; ?></a></li>
 	<?php endforeach; ?>
 </ul>

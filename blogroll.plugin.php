@@ -894,17 +894,16 @@ WP_IMPORT_STAGE2;
 
 		if ( ! empty( $blogs ) ) {
 			foreach( $blogs as $blog ) {
-			$list[] = (
-			"url" => $blog->info->url,
-			"content" => $blog->content,
-			"relationship" => $blog->info->relationship,
-			"relationships" => $blog->xfn_relationships,
-			"title" => $blog->title
-			);
-		} }
+			$list[] = array(
+        			"url" => $blog->info->url,
+				"content" => $blog->content,
+				"relationship" => $blog->info->relationship . " " . $blog->xfn_relationships,
+				"title" => $blog->title,
+				);
+			}
+		}
 
 		$block->list = $list;
-
 	}
 }
 ?>
