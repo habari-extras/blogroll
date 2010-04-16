@@ -83,6 +83,7 @@ class Blogroll extends Plugin
 		$this->add_template( 'formcontrol_opml_file', dirname($this->get_file()) . '/templates/formcontrol_file.php' );
 		$this->add_template( 'blogroll__tabcontrol_checkboxes', dirname($this->get_file()) . '/templates/tabcontrol_checkboxes.php' );
 		$this->add_template( 'blogroll__tabcontrol_radio', dirname($this->get_file()) . '/templates/tabcontrol_radio.php' );
+		$this->add_template( 'block.blogroll', dirname(__FILE__) . '/templates/block.blogroll.php' );
 	}
 
 	public function action_admin_header( $theme )
@@ -862,6 +863,48 @@ WP_IMPORT_STAGE2;
 		Options::delete('blogroll__db_version');
 		Options::set( 'blogroll__api_version', self::API_VERSION );
 		Options::set( 'blogroll__sort_by', 'id' );
+	}
+
+	/**
+	 * Add this to the list of possible block types.
+	 **/
+	public function filter_block_list( $block_list )
+	{
+		$block_list[ 'blogroll' ] = _t( 'Blogroll', 'blogroll' );
+		return $block_list;
+	}
+
+	public function action_block_content_blogroll( $block, $theme )
+	{
+		$block->title = Options::get( 'blogroll__list_title' );
+
+		// Build the params array to pass it to the get() method
+		$order_by = Options::get( 'blogroll__sort_by' );
+		$direction = Options::get( 'blogroll__direction');
+
+		$params = array(
+			'limit' => Options::get( 'blogroll__max_links' ),
+			'orderby' => $order_by . ' ' . $direction,
+			'status' => Post::status('published'),
+			'content_type' => Post::type(self::CONTENT_TYPE),
+		);
+
+		$blogs = Posts::get( $params );
+		$list = array();
+
+		if ( ! empty( $blogs ) ) {
+			foreach( $blogs as $blog ) {
+			$list[] = (
+			"url" => $blog->info->url,
+			"content" => $blog->content,
+			"relationship" => $blog->info->relationship,
+			"relationships" => $blog->xfn_relationships,
+			"title" => $blog->title
+			);
+		} }
+
+		$block->list = $list;
+
 	}
 }
 ?>
