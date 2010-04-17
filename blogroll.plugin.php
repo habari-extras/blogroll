@@ -83,7 +83,7 @@ class Blogroll extends Plugin
 		$this->add_template( 'formcontrol_opml_file', dirname($this->get_file()) . '/templates/formcontrol_file.php' );
 		$this->add_template( 'blogroll__tabcontrol_checkboxes', dirname($this->get_file()) . '/templates/tabcontrol_checkboxes.php' );
 		$this->add_template( 'blogroll__tabcontrol_radio', dirname($this->get_file()) . '/templates/tabcontrol_radio.php' );
-		$this->add_template( 'block.blogroll', dirname(__FILE__) . '/templates/block.blogroll.php' );
+		$this->add_template( 'block.blogroll', dirname($this->get_file()) . '/templates/block.blogroll.php' );
 	}
 
 	public function action_admin_header( $theme )
