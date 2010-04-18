@@ -2,7 +2,7 @@
 <pluggable type="plugin">
 	<name>Blogroll</name>
 	<license url="http://www.apache.org/licenses/LICENSE-2.0.html">Apache Software License 2.0</license>
-	<author url="http://habariproject.org/">Habari Community</author>
+	<author url="http://habariproject.org/">The Habari Community</author>
 	<version>0.7</version>
 	<url>http://wiki.habariproject.org/en/plugins/blogroll</url>
 	<description><![CDATA[Display and manage a blogroll on your blog.]]></description>
@@ -15,7 +15,7 @@
 			You create the link just as you would create a normal post. If you expand the "Settings"
 			and "XFN Relationship" sliders, you can add additional information about your link.</p>
 			
-			<p>You can	additionally add a "Quick Link", at the top, by entering the URL of your link, and Blogroll
+			<p>You can additionally add a "Quick Link", at the top, by entering the URL of your link, and Blogroll
 			will attempt to discover information about that URL automatically.</p>
 			
 			<h3>Manage Blogroll</h3>
@@ -30,22 +30,25 @@
 
 			<h3>Import/Export OPML</h3>
 			<p>You can import an OPML file from other applications, such as Liferea, Feed on Feeds, Google Reader, etc.
-			Go to "Import" in the menu and select "BlogRoll OPML File" as the type of import to preform. Here you can
+			Go to "Import" in the menu and select "BlogRoll OPML File" as the type of import to perform. Here you can
 			upload or link directly to any OPML file.</p>
 
-			<p>To export your blogroll as opml, simply navigate to the public URL ${habari_root}/blogroll/opml. You can
+			<p>To export your blogroll as OPML, simply navigate to the public URL ${habari_root}/blogroll/opml. You can
 			use this link as an export or for things like "Sources" in Liferea.</p>
 
 			<h3>Display Blogroll as a Block</h3>
 			<p>To display your Blogroll as a block in one of your theme's areas, create a new "blogroll" block in the "Areas"
 			section of the Themes admin page.</p>
 
+			<p>You can change the template it uses for display by copying "templates/block.blogroll.php", in the
+			blogroll plugin folder, to your theme's root folder, and modifying that template to your liking.</p>
+
 			<h3>Display Blogroll Manually</h3>
 			<p>To display your Blogroll, simply add the following template tag to your theme:</p>
 			<pre>&lt;?php $theme->display_blogroll(); ?&gt;</pre>
 
 			<p>You can change the template it uses for display by copying "templates/blogroll.php", in the
-			bloroll plugin folder, to your themes root folder, and modifying that template to your liking. Also
+			blogroll plugin folder, to your theme's root folder, and modifying that template to your liking. Also
 			note that some themes already provide a customized blogroll template.</p>
 
 
