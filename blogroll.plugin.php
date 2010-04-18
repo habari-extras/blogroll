@@ -879,17 +879,15 @@ WP_IMPORT_STAGE2;
 
 	public function action_block_content_blogroll( $block, $theme )
 	{
-		$block->title = Options::get( 'blogroll__list_title' );
-
 		// Build the params array to pass it to the get() method
-		$order_by = Options::get( 'blogroll__sort_by' );
-		$direction = Options::get( 'blogroll__direction');
+		$order_by = $block->sort_by; // Options::get( 'blogroll__sort_by' );
+		$direction = $block->direction; // Options::get( 'blogroll__direction');
 
 		$params = array(
-			'limit' => Options::get( 'blogroll__max_links' ),
+			'limit' => $block->max_links,
 			'orderby' => $order_by . ' ' . $direction,
-			'status' => Post::status('published'),
-			'content_type' => Post::type(self::CONTENT_TYPE),
+			'status' => Post::status( 'published' ),
+			'content_type' => Post::type( self::CONTENT_TYPE ),
 		);
 
 		$blogs = Posts::get( $params );
@@ -907,6 +905,25 @@ WP_IMPORT_STAGE2;
 		}
 
 		$block->list = $list;
+	}
+
+	public function action_block_form_blogroll( $form, $block )
+	{
+		$title = $form->append( 'text', 'list_title', $block, _t( 'List title: ', 'blogroll' ) );
+		$max = $form->append( 'text', 'max_links', $block, _t( 'Max. displayed links: ', 'blogroll') );
+
+		$sort_bys = array_merge( array_combine(
+			array_keys( Post::default_fields() ),
+			array_map( 'ucwords', array_keys( Post::default_fields() ) )
+			),
+			array( 'RAND()' => _t('Randomly', 'blogroll') )
+			);
+		$sortby = $form->append( 'select', 'sort_by', $block, _t( 'Sort By: ', 'blogroll'), $sort_bys );
+
+		$orders = array( 'ASC' => _t('Ascending' ,'blogroll'), 'DESC' => _t('Descending' ,'blogroll') );
+		$order = $form->append( 'select', 'direction', $block, _t( 'Order: ', 'blogroll'), $orders );
+
+		$form->append('submit', 'save', 'Save');
 	}
 }
 ?>
