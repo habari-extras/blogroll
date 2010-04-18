@@ -11,7 +11,6 @@
 
 class Blogroll extends Plugin
 {
-	const VERSION = '0.6-beta';
 	const API_VERSION = 005;
 	const CONTENT_TYPE = 'blogroll';
 
@@ -51,7 +50,11 @@ class Blogroll extends Plugin
 		Options::set( 'blogroll__direction', 'ASC' );
 		Options::set( 'blogroll__list_title', 'Blogroll' );
 
-		Post::add_new_type(self::CONTENT_TYPE);
+		Post::add_new_type( self::CONTENT_TYPE );
+
+		// Give anonymous users access
+		$group = UserGroup::get_by_name( 'anonymous' );
+		$group->grant( self::CONTENT_TYPE, 'read');
 	}
 
 	/**
