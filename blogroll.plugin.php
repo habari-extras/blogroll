@@ -54,7 +54,7 @@ class Blogroll extends Plugin
 
 		// Give anonymous users access
 		$group = UserGroup::get_by_name( 'anonymous' );
-		$group->grant( self::CONTENT_TYPE, 'read');
+		$group->grant( self::CONTENT_TYPE, 'read' );
 	}
 
 	/**
@@ -62,8 +62,8 @@ class Blogroll extends Plugin
 	 */
 	public function action_plugin_deactivation( $file )
 	{
-		CronTab::delete_cronjob('blogroll:update');
-		Options::delete('blogroll__api_version');
+		CronTab::delete_cronjob( 'blogroll:update' );
+		Options::delete( 'blogroll__api_version' );
 	}
 
 	public function filter_post_type_display($type, $foruse)
@@ -79,7 +79,7 @@ class Blogroll extends Plugin
 
 	public function action_init() {
 		// remove legacy tables and import
-		if ( Options::get('blogroll__db_version') || Options::get('blogroll__api_version') < 004 ) {
+		if ( Options::get( 'blogroll__db_version' ) || Options::get( 'blogroll__api_version' ) < 004 ) {
 			$this->upgrade_pre_004();
 		}
 		$this->add_template( 'blogroll', dirname($this->get_file()) . '/templates/blogroll.php' );
@@ -127,40 +127,40 @@ class Blogroll extends Plugin
 					$form = new FormUI( 'blogroll' );
 
 					// display settings
-					$display_wrap = $form->append( 'fieldset', 'display', _t('Display Settings', 'blogroll') );
+					$display_wrap = $form->append( 'fieldset', 'display', _t( 'Display Settings', 'blogroll' ) );
 					$title = $display_wrap->append(
 						'text', 'list_title', 'option:blogroll__list_title', _t( 'List title: ', 'blogroll' )
 					);
 					$max = $display_wrap->append(
 						'text', 'max_links', 'option:blogroll__max_links',
-						_t( 'Max. displayed links: ', 'blogroll')
+						_t( 'Max. displayed links: ', 'blogroll' )
 					);
 					$sort_bys = array_merge(
 						array_combine(
 							array_keys(Post::default_fields()),
 							array_map( 'ucwords', array_keys(Post::default_fields()) )
 						),
-						array( 'RAND()' => _t('Randomly', 'blogroll') )
+						array( 'RAND()' => _t( 'Randomly', 'blogroll' ) )
 						);
 					$sortby = $display_wrap->append(
 						'select', 'sort_by', 'option:blogroll__sort_by',
-						_t( 'Sort By: ', 'blogroll'), $sort_bys
+						_t( 'Sort By: ', 'blogroll' ), $sort_bys
 					);
-					$orders = array( 'ASC' => _t('Ascending' ,'blogroll'), 'DESC' => _t('Descending' ,'blogroll') );
+					$orders = array( 'ASC' => _t( 'Ascending' ,'blogroll' ), 'DESC' => _t( 'Descending' ,'blogroll' ) );
 					$order = $display_wrap->append(
 						'select', 'direction', 'option:blogroll__direction',
-						_t( 'Order: ', 'blogroll'), $orders
+						_t( 'Order: ', 'blogroll' ), $orders
 					);
 
 					// other settings
-					$other_wrap = $form->append( 'fieldset', 'settings', _t('More Settings', 'blogroll') );
+					$other_wrap = $form->append( 'fieldset', 'settings', _t( 'More Settings', 'blogroll' ) );
 					$update = $other_wrap->append(
 						'checkbox', 'use_updated', 'option:blogroll__use_updated',
-						_t( 'Use Weblogs.com to get updates? ', 'blogroll')
+						_t( 'Use Weblogs.com to get updates? ', 'blogroll' )
 					);
 
 					$form->append( 'submit', 'save', 'Save' );
-					$form->on_success( array($this, 'formui_submit') );
+					$form->on_success( array($this, 'formui_submit' ) );
 					$form->out();
 					break;
 			}
@@ -169,7 +169,7 @@ class Blogroll extends Plugin
 
 	public function formui_submit( FormUI $form )
 	{
-		Session::notice( _t('Blogroll options saved.', 'blogroll') );
+		Session::notice( _t( 'Blogroll options saved.', 'blogroll' ) );
 		$form->save();
 	}
 
@@ -178,19 +178,19 @@ class Blogroll extends Plugin
 			foreach ($this->info_fields as $field_name) {
 				$post->info->$field_name= $form->$field_name->value;
 			}
-			if(isset($form->quick_url) && $form->quick_url->value != '') {
+			if(isset($form->quick_url) && $form->quick_url->value != '' ) {
 				$data = $this->get_info_from_url($form->quick_url->value);
 				if ( $data ) {
-					$data = array_map( create_function('$a', 'return InputFilter::filter($a);'), $data );
+					$data = array_map( create_function( '$a', 'return InputFilter::filter($a);' ), $data );
 					$post->title= $data['name'];
 					$post->info->url= $data['url'];
 					$post->content= $data['description'];
 					$post->info->feedurl= $data['feed'];
 					$post->slug= Utils::slugify($data['name']);
-					$post->status= Post::status('published');
+					$post->status= Post::status( 'published' );
 				}
 				else {
-					Session::error( _t("Could not find information for {$form->quick_url->value}. Please enter the information manually.", 'blogroll') );
+					Session::error( _t("Could not find information for {$form->quick_url->value}. Please enter the information manually.", 'blogroll' ) );
 					$title = parse_url($form->quick_url->value, PHP_URL_HOST);
 					$post->title = ( $title ) ? $title : $form->quick_url->value;
 					$post->info->url = $form->quick_url->value;
@@ -204,17 +204,17 @@ class Blogroll extends Plugin
 
 		if( $form->content_type->value == Post::type(self::CONTENT_TYPE) ) {
 
-			if ( !Controller::get_var('id') ) {
+			if ( !Controller::get_var( 'id' ) ) {
 				// Quick link button to automagically discover info
-				$quicklink_controls= $form->append('tabs', 'quicklink_controls');
+				$quicklink_controls= $form->append( 'tabs', 'quicklink_controls' );
 
-				$quicklink_tab= $quicklink_controls->append('fieldset', 'quicklink_tab', _t('Quick Link'));
-				$quicklink_wrapper= $quicklink_tab->append('wrapper', 'quicklink_wrapper');
+				$quicklink_tab= $quicklink_controls->append( 'fieldset', 'quicklink_tab', _t( 'Quick Link' ));
+				$quicklink_wrapper= $quicklink_tab->append( 'wrapper', 'quicklink_wrapper' );
 				$quicklink_wrapper->class='container';
 
-				$quicklink_wrapper->append('text', 'quick_url', 'null:null', _t('Quick URL'), 'tabcontrol_text');
-				$quicklink_wrapper->append('static', 'quick_url_info', '<p class="column span-15">Enter a url or feed url and other information will be automatically discovered.</p>');
-				$quicklink_wrapper->append('submit', 'addquick', _t('Add'), 'admincontrol_submit');
+				$quicklink_wrapper->append( 'text', 'quick_url', 'null:null', _t( 'Quick URL' ), 'tabcontrol_text' );
+				$quicklink_wrapper->append( 'static', 'quick_url_info', '<p class="column span-15">Enter a url or feed url and other information will be automatically discovered.</p>' );
+				$quicklink_wrapper->append( 'submit', 'addquick', _t( 'Add' ), 'admincontrol_submit' );
 
 				$quicklink_controls->move_before($quicklink_controls, $form);
 			}
@@ -226,77 +226,77 @@ class Blogroll extends Plugin
 			$form->comments_enabled->value = 0;
 
 			// Add the url field
-			$form->append('text', 'url', 'null:null', _t('URL'), 'admincontrol_text');
+			$form->append( 'text', 'url', 'null:null', _t( 'URL' ), 'admincontrol_text' );
 			$form->url->class= 'important';
 			$form->url->tabindex = 2;
 			$form->url->value = $post->info->url;
 			$form->url->move_after($form->title);
 
 			// Retitle fields
-			$form->title->caption= _t('Blog Name');
-			$form->content->caption= _t('Description');
+			$form->title->caption= _t( 'Blog Name' );
+			$form->content->caption= _t( 'Description' );
 			$form->content->tabindex= 3;
 			$form->tags->tabindex= 4;
 
 			// Create the extras splitter & fields
 			$extras = $form->settings;
 
-			$extras->append('text', 'feedurl', 'null:null', _t('Feed URL'), 'tabcontrol_text');
+			$extras->append( 'text', 'feedurl', 'null:null', _t( 'Feed URL' ), 'tabcontrol_text' );
 			$extras->feedurl->value = $post->info->feedurl;
 
-			$extras->append('text', 'ownername', 'null:null', _t('Owner Name'), 'tabcontrol_text');
+			$extras->append( 'text', 'ownername', 'null:null', _t( 'Owner Name' ), 'tabcontrol_text' );
 			$extras->ownername->value = $post->info->ownername;
 
 			$relationships = Plugins::filter( 'blogroll_relationships', $this->relationships );
-			$extras->append('select', 'relationship', 'null:null', _t('Relationship'), $relationships, 'tabcontrol_select');
+			$extras->append( 'select', 'relationship', 'null:null', _t( 'Relationship' ), $relationships, 'tabcontrol_select' );
 			$extras->relationship->value = $post->info->relationship;
 
 			// Create the XFN Selector
-			$xfnselector = $form->publish_controls->append('fieldset', 'xfnselector', _t('XFN'));
+			$xfnselector = $form->publish_controls->append( 'fieldset', 'xfnselector', _t( 'XFN' ));
 
-			$xfnselector->append('checkboxes', 'xfn_identity', 'null:null', _t('Identity'), array('me' => _t('Another web address of mine')), 'blogroll__tabcontrol_checkboxes');
+			$xfnselector->append( 'checkboxes', 'xfn_identity', 'null:null', _t( 'Identity' ), array( 'me' => _t( 'Another web address of mine' )), 'blogroll__tabcontrol_checkboxes' );
 			$xfnselector->xfn_identity->value = $post->info->xfn_identity;
 
-			$xfnselector->append('radio', 'xfn_friendship', 'null:null', _t('Friendship'), array(
-				'contact' => _t('Contact'),
-				'acquaintance' => _t('Acquaintance'),
-				'friend' => _t('Friend'),
-				'null:null' => _t('None')
-			), 'blogroll__tabcontrol_radio');
+			$xfnselector->append( 'radio', 'xfn_friendship', 'null:null', _t( 'Friendship' ), array(
+				'contact' => _t( 'Contact' ),
+				'acquaintance' => _t( 'Acquaintance' ),
+				'friend' => _t( 'Friend' ),
+				'null:null' => _t( 'None' )
+			), 'blogroll__tabcontrol_radio' );
 			$xfnselector->xfn_friendship->value = $post->info->xfn_friendship;
 
-			$xfnselector->append('checkboxes', 'xfn_physical', 'null:null', _t('Physical'), array('met' => _t('Met')), 'blogroll__tabcontrol_checkboxes');
+			$xfnselector->append( 'checkboxes', 'xfn_physical', 'null:null', _t( 'Physical' ), array( 'met' => _t( 'Met' )), 'blogroll__tabcontrol_checkboxes' );
 			$xfnselector->xfn_physical->value = $post->info->xfn_physical;
 
-			$xfnselector->append('checkboxes', 'xfn_professional', 'null:null', _t('Professional'), array(
-				'co-worker' => _t('Co-worker'),
-				'colleague' => _t('Colleague'),
-			), 'blogroll__tabcontrol_checkboxes');
+			$xfnselector->append( 'checkboxes', 'xfn_professional', 'null:null', _t( 'Professional' ), array(
+				'co-worker' => _t( 'Co-worker' ),
+				'colleague' => _t( 'Colleague' ),
+			), 'blogroll__tabcontrol_checkboxes' );
 			$xfnselector->xfn_professional->value = $post->info->xfn_professional;
 
-			$xfnselector->append('radio', 'xfn_geographical', 'null:null', _t('Geographical'), array(
-				'co-resident' => _t('Co-resident'),
-				'neighbor' => _t('Neighbor'),
-				'null:null' => _t('None')
-			), 'blogroll__tabcontrol_radio');
+			$xfnselector->append( 'radio', 'xfn_geographical', 'null:null', _t( 'Geographical' ), array(
+				'co-resident' => _t( 'Co-resident' ),
+				'neighbor' => _t( 'Neighbor' ),
+				'null:null' => _t( 'None' )
+			), 'blogroll__tabcontrol_radio' );
 			$xfnselector->xfn_geographical->value = $post->info->xfn_geographical;
 
-			$xfnselector->append('radio', 'xfn_family', 'null:null', _t('Family'), array(
-				'child' => _t('Child'),
-				'parent' => _t('Parent'),
-				'sibling' => _t('Sibling'),
-				'spouse' => _t('Spouse'),
-				'kin' => _t('Kin'),
-				'null:null' => _t('None')
-			), 'blogroll__tabcontrol_radio');
+			$xfnselector->append( 'radio', 'xfn_family', 'null:null', _t( 'Family' ), array(
+				'child' => _t( 'Child' ),
+				'parent' => _t( 'Parent' ),
+				'sibling' => _t( 'Sibling' ),
+				'spouse' => _t( 'Spouse' ),
+				'kin' => _t( 'Kin' ),
+				'null:null' => _t( 'None' )
+			), 'blogroll__tabcontrol_radio' );
 			$xfnselector->xfn_family->value = $post->info->xfn_family;
 
-			$xfnselector->append('checkboxes', 'xfn_romantic', 'null:null', _t('Romantic'), array(
-				'muse' => _t('Muse'),
-				'crush' => _t('Crush'),
-				'date' => _t('Date'),
-				'sweetheart' => _t('Sweetheart')
-			), 'blogroll__tabcontrol_checkboxes');
+			$xfnselector->append( 'checkboxes', 'xfn_romantic', 'null:null', _t( 'Romantic' ), array(
+				'muse' => _t( 'Muse' ),
+				'crush' => _t( 'Crush' ),
+				'date' => _t( 'Date' ),
+				'sweetheart' => _t( 'Sweetheart' )
+			), 'blogroll__tabcontrol_checkboxes' );
 			$xfnselector->xfn_romantic->value = $post->info->xfn_romantic;
 
 		}
@@ -324,7 +324,7 @@ class Blogroll extends Plugin
 				}
 			}
 
-			return str_replace( ' null:null', '', implode(' ', $xfn_rel) );
+			return str_replace( ' null:null', '', implode( ' ', $xfn_rel) );
 		}
 	}
 
@@ -378,7 +378,7 @@ class Blogroll extends Plugin
 		$href= '';
 		$link_count= count( $links );
 		for( $n= 0; $n < $link_count; $n++ ) {
-			$attributes= preg_split('/\s+/s', $links[$n]);
+			$attributes= preg_split( '/\s+/s', $links[$n]);
 			foreach ( $attributes as $attribute ) {
 				$att= preg_split( '/\s*=\s*/s', $attribute, 2 );
 				if ( isset( $att[1] ) ) {
@@ -424,12 +424,12 @@ class Blogroll extends Plugin
 
 		// Build the params array to pass it to the get() method
 		$order_by = Options::get( 'blogroll__sort_by' );
-		$direction = Options::get( 'blogroll__direction');
+		$direction = Options::get( 'blogroll__direction' );
 
 		$params = array(
 			'limit' => Options::get( 'blogroll__max_links' ),
 			'orderby' => $order_by . ' ' . $direction,
-			'status' => Post::status('published'),
+			'status' => Post::status( 'published' ),
 			'content_type' => Post::type(self::CONTENT_TYPE),
 		);
 
@@ -479,7 +479,7 @@ class Blogroll extends Plugin
 			array(
 				'content_type' => Post::type(self::CONTENT_TYPE),
 				'nolimit' => TRUE,
-				'status' => Post::status('published')
+				'status' => Post::status( 'published' )
 			)
 		);
 
@@ -493,7 +493,7 @@ class Blogroll extends Plugin
 				'relationship' => $blog->info->relationship,
 				'pubdate' => $blog->pubdate,
 				'updated' => $blog->updated,
-				'description' => htmlentities($blog->content, ENT_QUOTES, 'UTF-8')
+				'description' => htmlentities($blog->content, ENT_QUOTES, 'UTF-8' )
 			);
 			
 			foreach ( $data as $att => $value ) {
@@ -513,7 +513,7 @@ class Blogroll extends Plugin
 
 	public function filter_import_names( array $import_names )
 	{
-		return array_merge( $import_names, array(_t('BlogRoll OPML file', 'blogroll')) );
+		return array_merge( $import_names, array(_t( 'BlogRoll OPML file', 'blogroll' )) );
 	}
 
 	/**
@@ -528,7 +528,7 @@ class Blogroll extends Plugin
 	public function filter_import_stage( $stageoutput, $import_name, $stage, $step )
 	{
 		// Only act on this filter if the import_name is one we handle...
-		if( $import_name != _t('BlogRoll OPML file', 'blogroll') ) {
+		if( $import_name != _t( 'BlogRoll OPML file', 'blogroll' ) ) {
 			// Must return $stageoutput as it may contain the stage HTML of another importer
 			return $stageoutput;
 		}
@@ -615,8 +615,8 @@ BR_IMPORT_STAGE1;
 		extract( $inputs );
 
 		$ajax_url = URL::get( 'auth_ajax', array( 'context' => 'blogroll_import_opml' ) );
-		EventLog::log(_t('Starting OPML Blogroll import'));
-		Options::set('import_errors', array());
+		EventLog::log(_t( 'Starting OPML Blogroll import' ));
+		Options::set( 'import_errors', array());
 
 		$output = <<< WP_IMPORT_STAGE2
 			<p>Import In Progress</p>
@@ -658,14 +658,14 @@ WP_IMPORT_STAGE2;
 			$count = $this->import_opml( $xml->body );
 			echo '<p>';
 			printf(
-				_n('Imported %d link from %s', 'Imported %d links from %s', $count, 'blogroll'),
+				_n( 'Imported %d link from %s', 'Imported %d links from %s', $count, 'blogroll' ),
 				$count,
 				(string) $xml->head->title
 			);
 			echo '</p>';
 		}
 		catch ( Exception $e ) {
-			_e('Sorry, could not parse that OPML file. It may be malformed.', 'blogroll');
+			_e( 'Sorry, could not parse that OPML file. It may be malformed.', 'blogroll' );
 		}
 	}
 
@@ -677,7 +677,7 @@ WP_IMPORT_STAGE2;
 	private function import_opml( SimpleXMLElement $xml )
 	{
 		if ( ! $xml->outline ) {
-			throw new Exception('Not a valid OPML resource');
+			throw new Exception( 'Not a valid OPML resource' );
 		}
 
 		$count = 0;
@@ -685,10 +685,10 @@ WP_IMPORT_STAGE2;
 			$atts = (array) $outline->attributes();
 			$params = $this->map_opml_atts( $atts['@attributes'] );
 			if ( isset( $params['url'] ) && isset( $params['title'] ) ) {
-				if ( count( Posts::get( array( 'all:info' => array('url' => $params['url'] ) ) ) ) >= 1 ) {
+				if ( count( Posts::get( array( 'all:info' => array( 'url' => $params['url'] ) ) ) ) >= 1 ) {
 					continue;
 				}
-				$params = array_map( create_function('$a', 'return InputFilter::filter($a);'), $params );
+				$params = array_map( create_function( '$a', 'return InputFilter::filter($a);' ), $params );
 				extract($params);
 				$user = User::identify();
 				$params = array(
@@ -696,7 +696,7 @@ WP_IMPORT_STAGE2;
 					'pubdate' => isset($pubdate) ? HabariDateTime::date_create($pubdate) : HabariDateTime::date_create(),
 					'updated' => isset($updated) ? HabariDateTime::date_create($updated) : HabariDateTime::date_create(),
 					'content' => isset($content) ? $content : '',
-					'status' => Post::status('published'),
+					'status' => Post::status( 'published' ),
 					'content_type' => Post::type(self::CONTENT_TYPE),
 					'user_id' => $user->id,
 				);
@@ -728,7 +728,7 @@ WP_IMPORT_STAGE2;
 			array_flip(
 				array_merge(
 					$this->info_fields,
-					array( 'title', 'pubdate', 'updated', 'content')
+					array( 'title', 'pubdate', 'updated', 'content' )
 				)
 			)
 		);
@@ -760,13 +760,13 @@ WP_IMPORT_STAGE2;
 	{
 		if ( Options::get( 'blogroll__use_updated' ) ) {
 			$request = new RemoteRequest( 'http://rpc.weblogs.com/rssUpdates/changes.xml', 'GET' );
-			$request->add_header( array( 'If-Modified-Since', Options::get('blogroll__last_update') ) );
+			$request->add_header( array( 'If-Modified-Since', Options::get( 'blogroll__last_update' ) ) );
 			if ( $request->execute() ) {
 				try {
 					$xml = new SimpleXMLElement( $request->get_response_body() );
 				}
 				catch ( Exception $e ) {
-					EventLog::log('Could not parse weblogs.com Changes XML file');
+					EventLog::log( 'Could not parse weblogs.com Changes XML file' );
 					return false;
 				}
 				$atts = $xml->attributes();
@@ -789,7 +789,7 @@ WP_IMPORT_STAGE2;
 						array(
 							'url', "%{$match['url']}%",
 							'feedurl', "%{$match['feedurl']}%",
-							Post::status('published'), Post::type(self::CONTENT_TYPE)
+							Post::status( 'published' ), Post::type(self::CONTENT_TYPE)
 						),
 						'Post'
 					);
@@ -805,7 +805,7 @@ WP_IMPORT_STAGE2;
 				return true;
 			}
 			else {
-				EventLog::log('Could not connect to weblogs.com');
+				EventLog::log( 'Could not connect to weblogs.com' );
 				return false;
 			}
 		}
@@ -814,11 +814,11 @@ WP_IMPORT_STAGE2;
 
 	public function upgrade_pre_004()
 	{
-		DB::register_table('blogroll');
-		DB::register_table('bloginfo');
-		DB::register_table('tag2blog');
+		DB::register_table( 'blogroll' );
+		DB::register_table( 'bloginfo' );
+		DB::register_table( 'tag2blog' );
 
-		if ( ! in_array( DB::table('blogroll'), DB::list_tables() ) ) {
+		if ( ! in_array( DB::table( 'blogroll' ), DB::list_tables() ) ) {
 			Options::set( 'blogroll__api_version', self::API_VERSION );
 			return;
 		}
@@ -844,9 +844,9 @@ WP_IMPORT_STAGE2;
 		}
 		try {
 			$count = $this->import_opml($opml->body);
-			DB::query('DROP TABLE IF EXISTS {blogroll}');
-			DB::query('DROP TABLE IF EXISTS {bloginfo}');
-			DB::query('DROP TABLE IF EXISTS {tag2blog}');
+			DB::query( 'DROP TABLE IF EXISTS {blogroll}' );
+			DB::query( 'DROP TABLE IF EXISTS {bloginfo}' );
+			DB::query( 'DROP TABLE IF EXISTS {tag2blog}' );
 			EventLog::log(
 				sprintf(
 					_n(
@@ -860,10 +860,10 @@ WP_IMPORT_STAGE2;
 			);
 		}
 		catch (Exception $e) {
-			EventLog::log( _t('Could not Import previous data. please import manually and drop tables.', 'blogroll') );
+			EventLog::log( _t( 'Could not Import previous data. please import manually and drop tables.', 'blogroll' ) );
 		}
 
-		Options::delete('blogroll__db_version');
+		Options::delete( 'blogroll__db_version' );
 		Options::set( 'blogroll__api_version', self::API_VERSION );
 		Options::set( 'blogroll__sort_by', 'id' );
 	}
@@ -880,11 +880,11 @@ WP_IMPORT_STAGE2;
 	public function action_block_content_blogroll( $block, $theme )
 	{
 		// Build the params array to pass it to the get() method
-		$order_by = $block->sort_by; // Options::get( 'blogroll__sort_by' );
-		$direction = $block->direction; // Options::get( 'blogroll__direction');
+		$order_by = $block->sort_by;
+		$direction = $block->direction;
 
 		$params = array(
-			'limit' => $block->max_links,
+			'limit' => ( $block->max_links ? $block->max_links : 10 ), // in case it is not yet configured
 			'orderby' => $order_by . ' ' . $direction,
 			'status' => Post::status( 'published' ),
 			'content_type' => Post::type( self::CONTENT_TYPE ),
@@ -910,20 +910,20 @@ WP_IMPORT_STAGE2;
 	public function action_block_form_blogroll( $form, $block )
 	{
 		$title = $form->append( 'text', 'list_title', $block, _t( 'List title: ', 'blogroll' ) );
-		$max = $form->append( 'text', 'max_links', $block, _t( 'Max. displayed links: ', 'blogroll') );
+		$max = $form->append( 'text', 'max_links', $block, _t( 'Max. displayed links: ', 'blogroll' ) );
 
 		$sort_bys = array_merge( array_combine(
 			array_keys( Post::default_fields() ),
 			array_map( 'ucwords', array_keys( Post::default_fields() ) )
 			),
-			array( 'RAND()' => _t('Randomly', 'blogroll') )
+			array( 'RAND()' => _t( 'Randomly', 'blogroll' ) )
 			);
-		$sortby = $form->append( 'select', 'sort_by', $block, _t( 'Sort By: ', 'blogroll'), $sort_bys );
+		$sortby = $form->append( 'select', 'sort_by', $block, _t( 'Sort By: ', 'blogroll' ), $sort_bys );
 
-		$orders = array( 'ASC' => _t('Ascending' ,'blogroll'), 'DESC' => _t('Descending' ,'blogroll') );
-		$order = $form->append( 'select', 'direction', $block, _t( 'Order: ', 'blogroll'), $orders );
+		$orders = array( 'ASC' => _t( 'Ascending' ,'blogroll' ), 'DESC' => _t( 'Descending' ,'blogroll' ) );
+		$order = $form->append( 'select', 'direction', $block, _t( 'Order: ', 'blogroll' ), $orders );
 
-		$form->append('submit', 'save', 'Save');
+		$form->append( 'submit', 'save', 'Save' );
 	}
 }
 ?>
