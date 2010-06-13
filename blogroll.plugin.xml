@@ -45,7 +45,7 @@
 
 			<h3>Display Blogroll Manually</h3>
 			<p>To display your Blogroll, simply add the following template tag to your theme:</p>
-			<pre>&lt;?php $theme->display_blogroll(); ?&gt;</pre>
+			<pre>&lt;?php $theme->show_blogroll(); ?&gt;</pre>
 
 			<p>You can change the template it uses for display by copying "templates/blogroll.php", in the
 			blogroll plugin folder, to your theme's root folder, and modifying that template to your liking. Also
