@@ -28,6 +28,12 @@
 
 			<p>In the configure screen, You can choose how the Blogroll will be displayed in your theme.</p>
 
+			<h3>Controlling Access</h3>
+			<p>You can control who can see your Blogroll links in the same way access can be controlled to other
+			content types. Go to the Groups admin page, select a group and you can specify whether the group can
+			read, create, edit, and delete Blogroll links. By default, Blogroll will try to add read access for
+			users who aren't logged in (the anonymous group).</p>
+			
 			<h3>Import/Export OPML</h3>
 			<p>You can import an OPML file from other applications, such as Liferea, Feed on Feeds, Google Reader, etc.
 			Go to "Import" in the menu and select "BlogRoll OPML File" as the type of import to perform. Here you can

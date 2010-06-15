@@ -52,9 +52,11 @@ class Blogroll extends Plugin
 
 		Post::add_new_type( self::CONTENT_TYPE );
 
-		// Give anonymous users access
+		// Give anonymous users access, if the group exists
 		$group = UserGroup::get_by_name( 'anonymous' );
-		$group->grant( self::CONTENT_TYPE, 'read' );
+		if ( $group ) {
+			$group->grant( self::CONTENT_TYPE, 'read' );
+		}
 	}
 
 	/**
