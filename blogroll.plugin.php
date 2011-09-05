@@ -94,7 +94,7 @@ class Blogroll extends Plugin
 
 	public function action_admin_header( $theme )
 	{
-		if ( 'publish' == $theme->page && $theme->form->content_type->value == Post::type(self::CONTENT_TYPE) ) {
+		if ( 'publish' == $theme->page && !empty($theme->form) && $theme->form->content_type->value == Post::type(self::CONTENT_TYPE) ) {
 			Stack::add( 'admin_stylesheet', array( $this->get_url() . '/blogroll.css', 'screen' ), 'blogroll' );
 		}
 	}
