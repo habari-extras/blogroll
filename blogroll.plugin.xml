@@ -7,7 +7,7 @@
 	<url>http://wiki.habariproject.org/en/plugins/blogroll</url>
 	<description><![CDATA[Display and manage a blogroll on your blog.]]></description>
 	<copyright>2009</copyright>
-	
+	<guid>dd2db46c-925d-4453-b0b8-ad1cfcbf6448</guid>
 	<help>
 		<value><![CDATA[
 			<h3>Create Link</h3>
