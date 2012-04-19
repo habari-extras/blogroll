@@ -102,14 +102,6 @@ class Blogroll extends Plugin
 	/**
 	 *
 	 */
-	public function action_update_check()
-	{
-		Update::add( 'blogroll', '0420cf10-db83-11dc-95ff-0800200c9a66',  $this->info->version );
-	}
-
-	/**
-	 *
-	 */
 	public function filter_plugin_config( $actions, $plugin_id )
 	{
 
