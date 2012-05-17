@@ -168,6 +168,47 @@ class Blogroll extends Plugin
 		$form->save();
 	}
 
+    public function action_admin_posts_action( $response, $action, Posts $posts ) {
+        if ( $action == 'updateBlogroll' ) {
+            $good = $bad = 0;
+            foreach ($posts as $post) {
+                if( $post->info->url ) {
+                    $data = $this->get_info_from_url($post->info->url);
+                    if ( $data ) {
+                        $data = array_map( create_function( '$a', 'return InputFilter::filter($a);' ), $data );
+                        $post->title= $data['name'];
+                        $post->info->url= $data['url'];
+                        $post->content= $data['description'];
+                        $post->info->feedurl= $data['feed'];
+                        $post->update();
+                        $good++;
+                    }
+                    else {
+                        $bad++;
+                    }
+                }
+            }
+            if ( $good ) {
+                $response->message = sprintf(_n('Updated %d link.', 'Updated %d links.', $good, self::CONTENT_TYPE), $good);
+            }
+            if ( $bad ) {
+                $response->message .= sprintf(_n('%d link could not be updated.', '%d links could not be updated.', $bad, self::CONTENT_TYPE), $bad);
+            }
+        }
+    }
+
+    public function filter_posts_manage_actions($actions) {
+        if ( $_GET['type'] == Post::type(self::CONTENT_TYPE) ) {
+            $action = array(
+                'action' => 'itemManage.update(\'updateBlogroll\');return false;',
+                'title' => 'Update Selected',
+                'label' => 'Update Selected'
+            );
+            $actions[] = $action;
+        }
+        return $actions;
+    }
+
 	public function action_publish_post( Post $post, FormUI $form ) {
 		if ( $post->content_type == Post::type(self::CONTENT_TYPE) ) {
 			foreach ($this->info_fields as $field_name) {
