@@ -797,50 +797,56 @@ WP_IMPORT_STAGE2;
 		if ( Options::get( 'blogroll__use_updated' ) ) {
 			$request = new RemoteRequest( 'http://rpc.weblogs.com/changes.xml', 'GET' );
 			$request->add_header( array( 'If-Modified-Since', Options::get( 'blogroll__last_update' ) ) );
-			if ( $request->execute() ) {
-				try {
-					$xml = new SimpleXMLElement( $request->get_response_body() );
-				}
-				catch ( Exception $e ) {
-					EventLog::log( 'Could not parse weblogs.com Changes XML file' );
-					return false;
-				}
-				$atts = $xml->attributes();
-				$updated = strtotime( (string) $atts['updated'] );
-				foreach ( $xml->weblog as $weblog ) {
-					$atts = $weblog->attributes();
-					$match = array();
-					$match['url'] = (string) $atts['url'];
-					$match['feedurl'] = (string) $atts['rssUrl'];
-					$update = $updated - (int) $atts['when'];
-					// use LIKE for info matching
-					$posts = DB::get_results(
-						'SELECT * FROM {posts}
-						WHERE
-						{posts}.id IN (
-							SELECT post_id FROM {postinfo}
-							WHERE ( (name = ? AND value LIKE ? ) OR (name = ? AND value LIKE ? ) )
-						)
-						AND status = ? AND content_type = ?',
-						array(
-							'url', "%{$match['url']}%",
-							'feedurl', "%{$match['feedurl']}%",
-							Post::status( 'published' ), Post::type(self::CONTENT_TYPE)
-						),
-						'Post'
-					);
-					if ( $posts instanceof Posts && $posts->count() > 0 ) {
-						foreach ( $posts as $post ) {
-							$post->updated = HabariDateTime::create($update);
-							$post->update();
-							EventLog::log("Updated {$post->title} last update time from weblogs.com");
+			try {
+				if ( $request->execute() ) {
+					try {
+						$xml = new SimpleXMLElement( $request->get_response_body() );
+					}
+					catch ( Exception $e ) {
+						EventLog::log( 'Could not parse weblogs.com Changes XML file' );
+						return false;
+					}
+					$atts = $xml->attributes();
+					$updated = strtotime( (string) $atts['updated'] );
+					foreach ( $xml->weblog as $weblog ) {
+						$atts = $weblog->attributes();
+						$match = array();
+						$match['url'] = (string) $atts['url'];
+						$match['feedurl'] = (string) $atts['rssUrl'];
+						$update = $updated - (int) $atts['when'];
+						// use LIKE for info matching
+						$posts = DB::get_results(
+							'SELECT * FROM {posts}
+							WHERE
+							{posts}.id IN (
+								SELECT post_id FROM {postinfo}
+								WHERE ( (name = ? AND value LIKE ? ) OR (name = ? AND value LIKE ? ) )
+							)
+							AND status = ? AND content_type = ?',
+							array(
+								'url', "%{$match['url']}%",
+								'feedurl', "%{$match['feedurl']}%",
+								Post::status( 'published' ), Post::type(self::CONTENT_TYPE)
+							),
+							'Post'
+						);
+						if ( $posts instanceof Posts && $posts->count() > 0 ) {
+							foreach ( $posts as $post ) {
+								$post->updated = HabariDateTime::create($update);
+								$post->update();
+								EventLog::log("Updated {$post->title} last update time from weblogs.com");
+							}
 						}
 					}
+					Options::set( 'blogroll__last_update', gmdate( 'D, d M Y G:i:s e' ) );
+					return true;
 				}
-				Options::set( 'blogroll__last_update', gmdate( 'D, d M Y G:i:s e' ) );
-				return true;
+				else {
+					EventLog::log( 'Could not connect to weblogs.com' );
+					return false;
+				}
 			}
-			else {
+			catch ( Exception $e ) {
 				EventLog::log( 'Could not connect to weblogs.com' );
 				return false;
 			}
