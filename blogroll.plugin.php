@@ -795,7 +795,7 @@ WP_IMPORT_STAGE2;
 	public function filter_blogroll_update_cron( $success )
 	{
 		if ( Options::get( 'blogroll__use_updated' ) ) {
-			$request = new RemoteRequest( 'http://rpc.weblogs.com/rssUpdates/changes.xml', 'GET' );
+			$request = new RemoteRequest( 'http://rpc.weblogs.com/changes.xml', 'GET' );
 			$request->add_header( array( 'If-Modified-Since', Options::get( 'blogroll__last_update' ) ) );
 			if ( $request->execute() ) {
 				try {
