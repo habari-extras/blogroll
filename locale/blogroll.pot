@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-11-03 04:08+0100\n"
+"POT-Creation-Date: 2012-11-07 05:59+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,246 +22,250 @@ msgstr ""
 msgid "Blogroll Link"
 msgstr ""
 
-#: blogroll.plugin.php:76 blogroll.plugin.php:918
+#: blogroll.plugin.php:76 blogroll.plugin.php:920
 msgid "Blogroll"
 msgstr ""
 
-#: blogroll.plugin.php:109 blogroll.plugin.php:121
+#: blogroll.plugin.php:111 blogroll.plugin.php:123
 msgid "Configure"
 msgstr ""
 
-#: blogroll.plugin.php:125
+#: blogroll.plugin.php:127
 msgid "Display Settings"
 msgstr ""
 
-#: blogroll.plugin.php:127 blogroll.plugin.php:954
+#: blogroll.plugin.php:129 blogroll.plugin.php:956
 msgid "List title: "
 msgstr ""
 
-#: blogroll.plugin.php:131 blogroll.plugin.php:955
+#: blogroll.plugin.php:133 blogroll.plugin.php:957
 msgid "Max. displayed links: "
 msgstr ""
 
-#: blogroll.plugin.php:138 blogroll.plugin.php:961
+#: blogroll.plugin.php:140 blogroll.plugin.php:963
 msgid "Randomly"
 msgstr ""
 
-#: blogroll.plugin.php:142 blogroll.plugin.php:963
+#: blogroll.plugin.php:144 blogroll.plugin.php:965
 msgid "Sort By: "
 msgstr ""
 
-#: blogroll.plugin.php:144 blogroll.plugin.php:965
+#: blogroll.plugin.php:146 blogroll.plugin.php:967
 msgid "Ascending"
 msgstr ""
 
-#: blogroll.plugin.php:144 blogroll.plugin.php:965
+#: blogroll.plugin.php:146 blogroll.plugin.php:967
 msgid "Descending"
 msgstr ""
 
-#: blogroll.plugin.php:147 blogroll.plugin.php:966
+#: blogroll.plugin.php:149 blogroll.plugin.php:968
 msgid "Order: "
 msgstr ""
 
-#: blogroll.plugin.php:151
+#: blogroll.plugin.php:153
 msgid "More Settings"
 msgstr ""
 
-#: blogroll.plugin.php:154
+#: blogroll.plugin.php:156
 msgid "Use Weblogs.com to get updates? "
 msgstr ""
 
-#: blogroll.plugin.php:167
+#: blogroll.plugin.php:169
 msgid "Blogroll options saved."
 msgstr ""
 
-#: blogroll.plugin.php:192
+#: blogroll.plugin.php:194
 #, php-format
 msgid "Updated %d link."
 msgid_plural "Updated %d links."
 msgstr[0] ""
 msgstr[1] ""
 
-#: blogroll.plugin.php:195
+#: blogroll.plugin.php:197
 #, php-format
 msgid "%d link could not be updated."
 msgid_plural "%d links could not be updated."
 msgstr[0] ""
 msgstr[1] ""
 
-#: blogroll.plugin.php:247
+#: blogroll.plugin.php:249
 msgid "Quick Link"
 msgstr ""
 
-#: blogroll.plugin.php:251
+#: blogroll.plugin.php:253
 msgid "Quick URL"
 msgstr ""
 
-#: blogroll.plugin.php:253
+#: blogroll.plugin.php:254
+msgid "Enter a url or feed url and other information will be automatically discovered."
+msgstr ""
+
+#: blogroll.plugin.php:255
 msgid "Add"
 msgstr ""
 
-#: blogroll.plugin.php:265
+#: blogroll.plugin.php:267
 msgid "URL"
 msgstr ""
 
-#: blogroll.plugin.php:272
+#: blogroll.plugin.php:274
 msgid "Blog Name"
 msgstr ""
 
-#: blogroll.plugin.php:273
+#: blogroll.plugin.php:275
 msgid "Description"
 msgstr ""
 
-#: blogroll.plugin.php:280
+#: blogroll.plugin.php:282
 msgid "Feed URL"
 msgstr ""
 
-#: blogroll.plugin.php:283
+#: blogroll.plugin.php:285
 msgid "Owner Name"
 msgstr ""
 
-#: blogroll.plugin.php:287
+#: blogroll.plugin.php:289
 msgid "Relationship"
 msgstr ""
 
-#: blogroll.plugin.php:291
+#: blogroll.plugin.php:293
 msgid "XFN"
 msgstr ""
 
-#: blogroll.plugin.php:293
+#: blogroll.plugin.php:295
 msgid "Identity"
 msgstr ""
 
-#: blogroll.plugin.php:293
+#: blogroll.plugin.php:295
 msgid "Another web address of mine"
 msgstr ""
 
-#: blogroll.plugin.php:296
+#: blogroll.plugin.php:298
 msgid "Friendship"
 msgstr ""
 
-#: blogroll.plugin.php:297
+#: blogroll.plugin.php:299
 msgid "Contact"
 msgstr ""
 
-#: blogroll.plugin.php:298
+#: blogroll.plugin.php:300
 msgid "Acquaintance"
 msgstr ""
 
-#: blogroll.plugin.php:299
+#: blogroll.plugin.php:301
 msgid "Friend"
 msgstr ""
 
-#: blogroll.plugin.php:300 blogroll.plugin.php:316 blogroll.plugin.php:326
+#: blogroll.plugin.php:302 blogroll.plugin.php:318 blogroll.plugin.php:328
 msgid "None"
 msgstr ""
 
-#: blogroll.plugin.php:304
+#: blogroll.plugin.php:306
 msgid "Physical"
 msgstr ""
 
-#: blogroll.plugin.php:304
+#: blogroll.plugin.php:306
 msgid "Met"
 msgstr ""
 
-#: blogroll.plugin.php:307
+#: blogroll.plugin.php:309
 msgid "Professional"
 msgstr ""
 
-#: blogroll.plugin.php:308
+#: blogroll.plugin.php:310
 msgid "Co-worker"
 msgstr ""
 
-#: blogroll.plugin.php:309
+#: blogroll.plugin.php:311
 msgid "Colleague"
 msgstr ""
 
-#: blogroll.plugin.php:313
+#: blogroll.plugin.php:315
 msgid "Geographical"
 msgstr ""
 
-#: blogroll.plugin.php:314
+#: blogroll.plugin.php:316
 msgid "Co-resident"
 msgstr ""
 
-#: blogroll.plugin.php:315
+#: blogroll.plugin.php:317
 msgid "Neighbor"
 msgstr ""
 
-#: blogroll.plugin.php:320
+#: blogroll.plugin.php:322
 msgid "Family"
 msgstr ""
 
-#: blogroll.plugin.php:321
+#: blogroll.plugin.php:323
 msgid "Child"
 msgstr ""
 
-#: blogroll.plugin.php:322
+#: blogroll.plugin.php:324
 msgid "Parent"
 msgstr ""
 
-#: blogroll.plugin.php:323
+#: blogroll.plugin.php:325
 msgid "Sibling"
 msgstr ""
 
-#: blogroll.plugin.php:324
+#: blogroll.plugin.php:326
 msgid "Spouse"
 msgstr ""
 
-#: blogroll.plugin.php:325
+#: blogroll.plugin.php:327
 msgid "Kin"
 msgstr ""
 
-#: blogroll.plugin.php:330
+#: blogroll.plugin.php:332
 msgid "Romantic"
 msgstr ""
 
-#: blogroll.plugin.php:331
+#: blogroll.plugin.php:333
 msgid "Muse"
 msgstr ""
 
-#: blogroll.plugin.php:332
+#: blogroll.plugin.php:334
 msgid "Crush"
 msgstr ""
 
-#: blogroll.plugin.php:333
+#: blogroll.plugin.php:335
 msgid "Date"
 msgstr ""
 
-#: blogroll.plugin.php:334
+#: blogroll.plugin.php:336
 msgid "Sweetheart"
 msgstr ""
 
-#: blogroll.plugin.php:552 blogroll.plugin.php:567
+#: blogroll.plugin.php:554 blogroll.plugin.php:569
 msgid "BlogRoll OPML file"
 msgstr ""
 
-#: blogroll.plugin.php:590
+#: blogroll.plugin.php:592
 msgid "You did not provide an OPML file."
 msgstr ""
 
-#: blogroll.plugin.php:654
+#: blogroll.plugin.php:656
 msgid "Starting OPML Blogroll import"
 msgstr ""
 
-#: blogroll.plugin.php:697
+#: blogroll.plugin.php:699
 #, php-format
 msgid "Imported %d link from %s"
 msgid_plural "Imported %d links from %s"
 msgstr[0] ""
 msgstr[1] ""
 
-#: blogroll.plugin.php:704
+#: blogroll.plugin.php:706
 msgid "Sorry, could not parse that OPML file. It may be malformed."
 msgstr ""
 
-#: blogroll.plugin.php:895
+#: blogroll.plugin.php:897
 #, php-format
 msgid "Imported %d blog from previous Blogroll version, and removed obsolete tables"
 msgid_plural "Imported %d blogs from previous Blogroll version, and removed obsolete tables"
 msgstr[0] ""
 msgstr[1] ""
 
-#: blogroll.plugin.php:905
+#: blogroll.plugin.php:907
 msgid "Could not Import previous data. please import manually and drop tables."
 msgstr ""
