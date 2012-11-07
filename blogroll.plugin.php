@@ -191,10 +191,10 @@ class Blogroll extends Plugin
                 }
             }
             if ( $good ) {
-                $response->message = sprintf(_n('Updated %d link.', 'Updated %d links.', $good, self::CONTENT_TYPE), $good);
+                $response->message = sprintf(_n('Updated %d link.', 'Updated %d links.', $good, __CLASS__), $good);
             }
             if ( $bad ) {
-                $response->message .= sprintf(_n('%d link could not be updated.', '%d links could not be updated.', $bad, self::CONTENT_TYPE), $bad);
+                $response->message .= sprintf(_n('%d link could not be updated.', '%d links could not be updated.', $bad, __CLASS__), $bad);
             }
         }
     }
@@ -228,7 +228,7 @@ class Blogroll extends Plugin
 					$post->status= Post::status( 'published' );
 				}
 				else {
-					Session::error( _t("Could not find information for {$form->quick_url->value}. Please enter the information manually.", 'blogroll' ) );
+					Session::error( _t("Could not find information for {$form->quick_url->value}. Please enter the information manually.", __CLASS__ ) );
 					$title = parse_url($form->quick_url->value, PHP_URL_HOST);
 					$post->title = ( $title ) ? $title : $form->quick_url->value;
 					$post->info->url = $form->quick_url->value;
@@ -696,14 +696,14 @@ WP_IMPORT_STAGE2;
 			$count = $this->import_opml( $xml->body );
 			echo '<p>';
 			printf(
-				_n( 'Imported %d link from %s', 'Imported %d links from %s', $count, 'blogroll' ),
+				_n( 'Imported %d link from %s', 'Imported %d links from %s', $count, __CLASS__ ),
 				$count,
 				(string) $xml->head->title
 			);
 			echo '</p>';
 		}
 		catch ( Exception $e ) {
-			_e( 'Sorry, could not parse that OPML file. It may be malformed.', 'blogroll' );
+			_e( 'Sorry, could not parse that OPML file. It may be malformed.', __CLASS__ );
 		}
 	}
 
@@ -897,7 +897,7 @@ WP_IMPORT_STAGE2;
 						'Imported %d blog from previous Blogroll version, and removed obsolete tables',
 						'Imported %d blogs from previous Blogroll version, and removed obsolete tables',
 						$count,
-						'blogroll'
+						__CLASS__
 					),
 					$count
 				)
