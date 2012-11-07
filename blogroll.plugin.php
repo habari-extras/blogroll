@@ -72,8 +72,8 @@ class Blogroll extends Plugin
 	{
 		$names = array(
 			self::CONTENT_TYPE => array(
-				'singular' => _t( 'Blogroll Link', self::CONTENT_TYPE ),
-				'plural' => _t( 'Blogroll', self::CONTENT_TYPE ),
+				'singular' => _t( 'Blogroll Link', __CLASS__ ),
+				'plural' => _t( 'Blogroll', __CLASS__ ),
 			)
 		);
 		return isset($names[$type][$foruse]) ? $names[$type][$foruse] : $type;
@@ -108,7 +108,7 @@ class Blogroll extends Plugin
 	{
 
 		if ( $this->plugin_id() == $plugin_id ){
-			$actions[]= _t( 'Configure', 'blogroll' );
+			$actions[]= _t( 'Configure', __CLASS__ );
 		}
 		return $actions;
 	}
@@ -120,40 +120,40 @@ class Blogroll extends Plugin
 	{
 		if ( $this->plugin_id() == $plugin_id ) {
 			switch ( $action ) {
-				case _t( 'Configure', 'blogroll' ):
+				case _t( 'Configure', __CLASS__ ):
 					$form = new FormUI( 'blogroll' );
 
 					// display settings
-					$display_wrap = $form->append( 'fieldset', 'display', _t( 'Display Settings', 'blogroll' ) );
+					$display_wrap = $form->append( 'fieldset', 'display', _t( 'Display Settings', __CLASS__ ) );
 					$title = $display_wrap->append(
-						'text', 'list_title', 'option:blogroll__list_title', _t( 'List title: ', 'blogroll' )
+						'text', 'list_title', 'option:blogroll__list_title', _t( 'List title: ', __CLASS__ )
 					);
 					$max = $display_wrap->append(
 						'text', 'max_links', 'option:blogroll__max_links',
-						_t( 'Max. displayed links: ', 'blogroll' )
+						_t( 'Max. displayed links: ', __CLASS__ )
 					);
 					$sort_bys = array_merge(
 						array_combine(
 							array_keys(Post::default_fields()),
 							array_map( 'ucwords', array_keys(Post::default_fields()) )
 						),
-						array( 'RAND()' => _t( 'Randomly', 'blogroll' ) )
+						array( 'RAND()' => _t( 'Randomly', __CLASS__ ) )
 						);
 					$sortby = $display_wrap->append(
 						'select', 'sort_by', 'option:blogroll__sort_by',
-						_t( 'Sort By: ', 'blogroll' ), $sort_bys
+						_t( 'Sort By: ', __CLASS__ ), $sort_bys
 					);
-					$orders = array( 'ASC' => _t( 'Ascending' ,'blogroll' ), 'DESC' => _t( 'Descending' ,'blogroll' ) );
+					$orders = array( 'ASC' => _t( 'Ascending', __CLASS__ ), 'DESC' => _t( 'Descending', __CLASS__ ) );
 					$order = $display_wrap->append(
 						'select', 'direction', 'option:blogroll__direction',
-						_t( 'Order: ', 'blogroll' ), $orders
+						_t( 'Order: ', __CLASS__ ), $orders
 					);
 
 					// other settings
-					$other_wrap = $form->append( 'fieldset', 'settings', _t( 'More Settings', 'blogroll' ) );
+					$other_wrap = $form->append( 'fieldset', 'settings', _t( 'More Settings', __CLASS__ ) );
 					$update = $other_wrap->append(
 						'checkbox', 'use_updated', 'option:blogroll__use_updated',
-						_t( 'Use Weblogs.com to get updates? ', 'blogroll' )
+						_t( 'Use Weblogs.com to get updates? ', __CLASS__ )
 					);
 
 					$form->append( 'submit', 'save', 'Save' );
@@ -166,7 +166,7 @@ class Blogroll extends Plugin
 
 	public function formui_submit( FormUI $form )
 	{
-		Session::notice( _t( 'Blogroll options saved.', 'blogroll' ) );
+		Session::notice( _t( 'Blogroll options saved.', __CLASS__ ) );
 		$form->save();
 	}
 
@@ -251,7 +251,7 @@ class Blogroll extends Plugin
 				$quicklink_wrapper->class='container';
 
 				$quicklink_wrapper->append( 'text', 'quick_url', 'null:null', _t( 'Quick URL', __CLASS__ ), 'tabcontrol_text' );
-				$quicklink_wrapper->append( 'static', 'quick_url_info', '<p class="column span-15">Enter a url or feed url and other information will be automatically discovered.</p>' );
+				$quicklink_wrapper->append( 'static', 'quick_url_info', '<p class="column span-15">'._t("Enter a url or feed url and other information will be automatically discovered.", __CLASS__).'</p>' );
 				$quicklink_wrapper->append( 'submit', 'addquick', _t( 'Add', __CLASS__ ), 'admincontrol_submit' );
 
 				$quicklink_controls->move_before($quicklink_controls, $form);
@@ -551,7 +551,7 @@ class Blogroll extends Plugin
 
 	public function filter_import_names( array $import_names )
 	{
-		return array_merge( $import_names, array(_t( 'BlogRoll OPML file', 'blogroll' )) );
+		return array_merge( $import_names, array(_t( 'BlogRoll OPML file', __CLASS__ )) );
 	}
 
 	/**
@@ -566,7 +566,7 @@ class Blogroll extends Plugin
 	public function filter_import_stage( $stageoutput, $import_name, $stage, $step )
 	{
 		// Only act on this filter if the import_name is one we handle...
-		if( $import_name != _t( 'BlogRoll OPML file', 'blogroll' ) ) {
+		if( $import_name != _t( 'BlogRoll OPML file', __CLASS__ ) ) {
 			// Must return $stageoutput as it may contain the stage HTML of another importer
 			return $stageoutput;
 		}
@@ -589,7 +589,7 @@ class Blogroll extends Plugin
 				$stage = 2;
 			}
 			else {
-				$inputs['warning']= _t( 'You did not provide an OPML file.', 'blogroll' );
+				$inputs['warning']= _t( 'You did not provide an OPML file.', __CLASS__ );
 			}
 			break;
 		}
@@ -904,7 +904,7 @@ WP_IMPORT_STAGE2;
 			);
 		}
 		catch (Exception $e) {
-			EventLog::log( _t( 'Could not Import previous data. please import manually and drop tables.', 'blogroll' ) );
+			EventLog::log( _t( 'Could not Import previous data. please import manually and drop tables.', __CLASS__ ) );
 		}
 
 		Options::delete( 'blogroll__db_version' );
@@ -917,7 +917,7 @@ WP_IMPORT_STAGE2;
 	 **/
 	public function filter_block_list( $block_list )
 	{
-		$block_list[ 'blogroll' ] = _t( 'Blogroll', 'blogroll' );
+		$block_list[ 'blogroll' ] = _t( 'Blogroll', __CLASS__ );
 		return $block_list;
 	}
 
@@ -953,19 +953,19 @@ WP_IMPORT_STAGE2;
 
 	public function action_block_form_blogroll( $form, $block )
 	{
-		$title = $form->append( 'text', 'list_title', $block, _t( 'List title: ', 'blogroll' ) );
-		$max = $form->append( 'text', 'max_links', $block, _t( 'Max. displayed links: ', 'blogroll' ) );
+		$title = $form->append( 'text', 'list_title', $block, _t( 'List title: ', __CLASS__ ) );
+		$max = $form->append( 'text', 'max_links', $block, _t( 'Max. displayed links: ', __CLASS__ ) );
 
 		$sort_bys = array_merge( array_combine(
 			array_keys( Post::default_fields() ),
 			array_map( 'ucwords', array_keys( Post::default_fields() ) )
 			),
-			array( 'RAND()' => _t( 'Randomly', 'blogroll' ) )
+			array( 'RAND()' => _t( 'Randomly', __CLASS__ ) )
 			);
-		$sortby = $form->append( 'select', 'sort_by', $block, _t( 'Sort By: ', 'blogroll' ), $sort_bys );
+		$sortby = $form->append( 'select', 'sort_by', $block, _t( 'Sort By: ', __CLASS__ ), $sort_bys );
 
-		$orders = array( 'ASC' => _t( 'Ascending' ,'blogroll' ), 'DESC' => _t( 'Descending' ,'blogroll' ) );
-		$order = $form->append( 'select', 'direction', $block, _t( 'Order: ', 'blogroll' ), $orders );
+		$orders = array( 'ASC' => _t( 'Ascending', __CLASS__ ), 'DESC' => _t( 'Descending', __CLASS__ ) );
+		$order = $form->append( 'select', 'direction', $block, _t( 'Order: ', __CLASS__ ), $orders );
 
 		$form->append( 'submit', 'save', 'Save' );
 	}
