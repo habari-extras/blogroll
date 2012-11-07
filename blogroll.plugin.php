@@ -90,6 +90,8 @@ class Blogroll extends Plugin
 		$this->add_template( 'blogroll__tabcontrol_radio', dirname($this->get_file()) . '/templates/tabcontrol_radio.php' );
 		$this->add_template( 'block.blogroll', dirname($this->get_file()) . '/templates/block.blogroll.php' );
 		$this->add_template( 'blogroll.single', dirname($this->get_file()) . '/templates/blogroll.single.php' );
+		
+		$this->load_text_domain(__CLASS__);
 	}
 
 	public function action_admin_header( $theme )
@@ -244,13 +246,13 @@ class Blogroll extends Plugin
 				// Quick link button to automagically discover info
 				$quicklink_controls= $form->append( 'tabs', 'quicklink_controls' );
 
-				$quicklink_tab= $quicklink_controls->append( 'fieldset', 'quicklink_tab', _t( 'Quick Link' ));
+				$quicklink_tab= $quicklink_controls->append( 'fieldset', 'quicklink_tab', _t( 'Quick Link', __CLASS__ ));
 				$quicklink_wrapper= $quicklink_tab->append( 'wrapper', 'quicklink_wrapper' );
 				$quicklink_wrapper->class='container';
 
-				$quicklink_wrapper->append( 'text', 'quick_url', 'null:null', _t( 'Quick URL' ), 'tabcontrol_text' );
+				$quicklink_wrapper->append( 'text', 'quick_url', 'null:null', _t( 'Quick URL', __CLASS__ ), 'tabcontrol_text' );
 				$quicklink_wrapper->append( 'static', 'quick_url_info', '<p class="column span-15">Enter a url or feed url and other information will be automatically discovered.</p>' );
-				$quicklink_wrapper->append( 'submit', 'addquick', _t( 'Add' ), 'admincontrol_submit' );
+				$quicklink_wrapper->append( 'submit', 'addquick', _t( 'Add', __CLASS__ ), 'admincontrol_submit' );
 
 				$quicklink_controls->move_before($quicklink_controls, $form);
 			}
@@ -262,76 +264,76 @@ class Blogroll extends Plugin
 			$form->comments_enabled->value = 0;
 
 			// Add the url field
-			$form->append( 'text', 'url', 'null:null', _t( 'URL' ), 'admincontrol_text' );
+			$form->append( 'text', 'url', 'null:null', _t( 'URL', __CLASS__ ), 'admincontrol_text' );
 			$form->url->class= 'important';
 			$form->url->tabindex = 2;
 			$form->url->value = $post->info->url;
 			$form->url->move_after($form->title);
 
 			// Retitle fields
-			$form->title->caption= _t( 'Blog Name' );
-			$form->content->caption= _t( 'Description' );
+			$form->title->caption= _t( 'Blog Name', __CLASS__ );
+			$form->content->caption= _t( 'Description', __CLASS__ );
 			$form->content->tabindex= 3;
 			$form->tags->tabindex= 4;
 
 			// Create the extras splitter & fields
 			$extras = $form->settings;
 
-			$extras->append( 'text', 'feedurl', 'null:null', _t( 'Feed URL' ), 'tabcontrol_text' );
+			$extras->append( 'text', 'feedurl', 'null:null', _t( 'Feed URL', __CLASS__ ), 'tabcontrol_text' );
 			$extras->feedurl->value = $post->info->feedurl;
 
-			$extras->append( 'text', 'ownername', 'null:null', _t( 'Owner Name' ), 'tabcontrol_text' );
+			$extras->append( 'text', 'ownername', 'null:null', _t( 'Owner Name', __CLASS__ ), 'tabcontrol_text' );
 			$extras->ownername->value = $post->info->ownername;
 
 			$relationships = Plugins::filter( 'blogroll_relationships', $this->relationships );
-			$extras->append( 'select', 'relationship', 'null:null', _t( 'Relationship' ), $relationships, 'tabcontrol_select' );
+			$extras->append( 'select', 'relationship', 'null:null', _t( 'Relationship', __CLASS__ ), $relationships, 'tabcontrol_select' );
 			$extras->relationship->value = $post->info->relationship;
 
 			// Create the XFN Selector
-			$xfnselector = $form->publish_controls->append( 'fieldset', 'xfnselector', _t( 'XFN' ));
+			$xfnselector = $form->publish_controls->append( 'fieldset', 'xfnselector', _t( 'XFN', __CLASS__ ));
 
-			$xfnselector->append( 'checkboxes', 'xfn_identity', 'null:null', _t( 'Identity' ), array( 'me' => _t( 'Another web address of mine' )), 'blogroll__tabcontrol_checkboxes' );
+			$xfnselector->append( 'checkboxes', 'xfn_identity', 'null:null', _t( 'Identity', __CLASS__ ), array( 'me' => _t( 'Another web address of mine', __CLASS__ )), 'blogroll__tabcontrol_checkboxes' );
 			$xfnselector->xfn_identity->value = $post->info->xfn_identity;
 
-			$xfnselector->append( 'radio', 'xfn_friendship', 'null:null', _t( 'Friendship' ), array(
-				'contact' => _t( 'Contact' ),
-				'acquaintance' => _t( 'Acquaintance' ),
-				'friend' => _t( 'Friend' ),
-				'null:null' => _t( 'None' )
+			$xfnselector->append( 'radio', 'xfn_friendship', 'null:null', _t( 'Friendship', __CLASS__ ), array(
+				'contact' => _t( 'Contact', __CLASS__ ),
+				'acquaintance' => _t( 'Acquaintance', __CLASS__ ),
+				'friend' => _t( 'Friend', __CLASS__ ),
+				'null:null' => _t( 'None', __CLASS__ )
 			), 'blogroll__tabcontrol_radio' );
 			$xfnselector->xfn_friendship->value = $post->info->xfn_friendship;
 
-			$xfnselector->append( 'checkboxes', 'xfn_physical', 'null:null', _t( 'Physical' ), array( 'met' => _t( 'Met' )), 'blogroll__tabcontrol_checkboxes' );
+			$xfnselector->append( 'checkboxes', 'xfn_physical', 'null:null', _t( 'Physical', __CLASS__ ), array( 'met' => _t( 'Met', __CLASS__ )), 'blogroll__tabcontrol_checkboxes' );
 			$xfnselector->xfn_physical->value = $post->info->xfn_physical;
 
-			$xfnselector->append( 'checkboxes', 'xfn_professional', 'null:null', _t( 'Professional' ), array(
-				'co-worker' => _t( 'Co-worker' ),
-				'colleague' => _t( 'Colleague' ),
+			$xfnselector->append( 'checkboxes', 'xfn_professional', 'null:null', _t( 'Professional', __CLASS__ ), array(
+				'co-worker' => _t( 'Co-worker', __CLASS__ ),
+				'colleague' => _t( 'Colleague', __CLASS__ ),
 			), 'blogroll__tabcontrol_checkboxes' );
 			$xfnselector->xfn_professional->value = $post->info->xfn_professional;
 
-			$xfnselector->append( 'radio', 'xfn_geographical', 'null:null', _t( 'Geographical' ), array(
-				'co-resident' => _t( 'Co-resident' ),
-				'neighbor' => _t( 'Neighbor' ),
-				'null:null' => _t( 'None' )
+			$xfnselector->append( 'radio', 'xfn_geographical', 'null:null', _t( 'Geographical', __CLASS__ ), array(
+				'co-resident' => _t( 'Co-resident', __CLASS__ ),
+				'neighbor' => _t( 'Neighbor', __CLASS__ ),
+				'null:null' => _t( 'None', __CLASS__ )
 			), 'blogroll__tabcontrol_radio' );
 			$xfnselector->xfn_geographical->value = $post->info->xfn_geographical;
 
-			$xfnselector->append( 'radio', 'xfn_family', 'null:null', _t( 'Family' ), array(
-				'child' => _t( 'Child' ),
-				'parent' => _t( 'Parent' ),
-				'sibling' => _t( 'Sibling' ),
-				'spouse' => _t( 'Spouse' ),
-				'kin' => _t( 'Kin' ),
-				'null:null' => _t( 'None' )
+			$xfnselector->append( 'radio', 'xfn_family', 'null:null', _t( 'Family', __CLASS__ ), array(
+				'child' => _t( 'Child', __CLASS__ ),
+				'parent' => _t( 'Parent', __CLASS__ ),
+				'sibling' => _t( 'Sibling', __CLASS__ ),
+				'spouse' => _t( 'Spouse', __CLASS__ ),
+				'kin' => _t( 'Kin', __CLASS__ ),
+				'null:null' => _t( 'None', __CLASS__ )
 			), 'blogroll__tabcontrol_radio' );
 			$xfnselector->xfn_family->value = $post->info->xfn_family;
 
-			$xfnselector->append( 'checkboxes', 'xfn_romantic', 'null:null', _t( 'Romantic' ), array(
-				'muse' => _t( 'Muse' ),
-				'crush' => _t( 'Crush' ),
-				'date' => _t( 'Date' ),
-				'sweetheart' => _t( 'Sweetheart' )
+			$xfnselector->append( 'checkboxes', 'xfn_romantic', 'null:null', _t( 'Romantic', __CLASS__ ), array(
+				'muse' => _t( 'Muse', __CLASS__ ),
+				'crush' => _t( 'Crush', __CLASS__ ),
+				'date' => _t( 'Date', __CLASS__ ),
+				'sweetheart' => _t( 'Sweetheart', __CLASS__ )
 			), 'blogroll__tabcontrol_checkboxes' );
 			$xfnselector->xfn_romantic->value = $post->info->xfn_romantic;
 
@@ -651,7 +653,7 @@ BR_IMPORT_STAGE1;
 		extract( $inputs );
 
 		$ajax_url = URL::get( 'auth_ajax', array( 'context' => 'blogroll_import_opml' ) );
-		EventLog::log(_t( 'Starting OPML Blogroll import' ));
+		EventLog::log(_t( 'Starting OPML Blogroll import', __CLASS__ ));
 		Options::set( 'import_errors', array());
 
 		$output = <<< WP_IMPORT_STAGE2
@@ -847,7 +849,7 @@ WP_IMPORT_STAGE2;
 				}
 			}
 			catch ( Exception $e ) {
-				EventLog::log( 'Could not connect to weblogs.com' );
+				EventLog::log( 'Could not connect to weblogs.com (request failed)','error','default','Blogroll',$e );
 				return false;
 			}
 		}

@@ -1,0 +1,267 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-11-03 04:08+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: blogroll.plugin.php:75
+msgid "Blogroll Link"
+msgstr ""
+
+#: blogroll.plugin.php:76 blogroll.plugin.php:918
+msgid "Blogroll"
+msgstr ""
+
+#: blogroll.plugin.php:109 blogroll.plugin.php:121
+msgid "Configure"
+msgstr ""
+
+#: blogroll.plugin.php:125
+msgid "Display Settings"
+msgstr ""
+
+#: blogroll.plugin.php:127 blogroll.plugin.php:954
+msgid "List title: "
+msgstr ""
+
+#: blogroll.plugin.php:131 blogroll.plugin.php:955
+msgid "Max. displayed links: "
+msgstr ""
+
+#: blogroll.plugin.php:138 blogroll.plugin.php:961
+msgid "Randomly"
+msgstr ""
+
+#: blogroll.plugin.php:142 blogroll.plugin.php:963
+msgid "Sort By: "
+msgstr ""
+
+#: blogroll.plugin.php:144 blogroll.plugin.php:965
+msgid "Ascending"
+msgstr ""
+
+#: blogroll.plugin.php:144 blogroll.plugin.php:965
+msgid "Descending"
+msgstr ""
+
+#: blogroll.plugin.php:147 blogroll.plugin.php:966
+msgid "Order: "
+msgstr ""
+
+#: blogroll.plugin.php:151
+msgid "More Settings"
+msgstr ""
+
+#: blogroll.plugin.php:154
+msgid "Use Weblogs.com to get updates? "
+msgstr ""
+
+#: blogroll.plugin.php:167
+msgid "Blogroll options saved."
+msgstr ""
+
+#: blogroll.plugin.php:192
+#, php-format
+msgid "Updated %d link."
+msgid_plural "Updated %d links."
+msgstr[0] ""
+msgstr[1] ""
+
+#: blogroll.plugin.php:195
+#, php-format
+msgid "%d link could not be updated."
+msgid_plural "%d links could not be updated."
+msgstr[0] ""
+msgstr[1] ""
+
+#: blogroll.plugin.php:247
+msgid "Quick Link"
+msgstr ""
+
+#: blogroll.plugin.php:251
+msgid "Quick URL"
+msgstr ""
+
+#: blogroll.plugin.php:253
+msgid "Add"
+msgstr ""
+
+#: blogroll.plugin.php:265
+msgid "URL"
+msgstr ""
+
+#: blogroll.plugin.php:272
+msgid "Blog Name"
+msgstr ""
+
+#: blogroll.plugin.php:273
+msgid "Description"
+msgstr ""
+
+#: blogroll.plugin.php:280
+msgid "Feed URL"
+msgstr ""
+
+#: blogroll.plugin.php:283
+msgid "Owner Name"
+msgstr ""
+
+#: blogroll.plugin.php:287
+msgid "Relationship"
+msgstr ""
+
+#: blogroll.plugin.php:291
+msgid "XFN"
+msgstr ""
+
+#: blogroll.plugin.php:293
+msgid "Identity"
+msgstr ""
+
+#: blogroll.plugin.php:293
+msgid "Another web address of mine"
+msgstr ""
+
+#: blogroll.plugin.php:296
+msgid "Friendship"
+msgstr ""
+
+#: blogroll.plugin.php:297
+msgid "Contact"
+msgstr ""
+
+#: blogroll.plugin.php:298
+msgid "Acquaintance"
+msgstr ""
+
+#: blogroll.plugin.php:299
+msgid "Friend"
+msgstr ""
+
+#: blogroll.plugin.php:300 blogroll.plugin.php:316 blogroll.plugin.php:326
+msgid "None"
+msgstr ""
+
+#: blogroll.plugin.php:304
+msgid "Physical"
+msgstr ""
+
+#: blogroll.plugin.php:304
+msgid "Met"
+msgstr ""
+
+#: blogroll.plugin.php:307
+msgid "Professional"
+msgstr ""
+
+#: blogroll.plugin.php:308
+msgid "Co-worker"
+msgstr ""
+
+#: blogroll.plugin.php:309
+msgid "Colleague"
+msgstr ""
+
+#: blogroll.plugin.php:313
+msgid "Geographical"
+msgstr ""
+
+#: blogroll.plugin.php:314
+msgid "Co-resident"
+msgstr ""
+
+#: blogroll.plugin.php:315
+msgid "Neighbor"
+msgstr ""
+
+#: blogroll.plugin.php:320
+msgid "Family"
+msgstr ""
+
+#: blogroll.plugin.php:321
+msgid "Child"
+msgstr ""
+
+#: blogroll.plugin.php:322
+msgid "Parent"
+msgstr ""
+
+#: blogroll.plugin.php:323
+msgid "Sibling"
+msgstr ""
+
+#: blogroll.plugin.php:324
+msgid "Spouse"
+msgstr ""
+
+#: blogroll.plugin.php:325
+msgid "Kin"
+msgstr ""
+
+#: blogroll.plugin.php:330
+msgid "Romantic"
+msgstr ""
+
+#: blogroll.plugin.php:331
+msgid "Muse"
+msgstr ""
+
+#: blogroll.plugin.php:332
+msgid "Crush"
+msgstr ""
+
+#: blogroll.plugin.php:333
+msgid "Date"
+msgstr ""
+
+#: blogroll.plugin.php:334
+msgid "Sweetheart"
+msgstr ""
+
+#: blogroll.plugin.php:552 blogroll.plugin.php:567
+msgid "BlogRoll OPML file"
+msgstr ""
+
+#: blogroll.plugin.php:590
+msgid "You did not provide an OPML file."
+msgstr ""
+
+#: blogroll.plugin.php:654
+msgid "Starting OPML Blogroll import"
+msgstr ""
+
+#: blogroll.plugin.php:697
+#, php-format
+msgid "Imported %d link from %s"
+msgid_plural "Imported %d links from %s"
+msgstr[0] ""
+msgstr[1] ""
+
+#: blogroll.plugin.php:704
+msgid "Sorry, could not parse that OPML file. It may be malformed."
+msgstr ""
+
+#: blogroll.plugin.php:895
+#, php-format
+msgid "Imported %d blog from previous Blogroll version, and removed obsolete tables"
+msgid_plural "Imported %d blogs from previous Blogroll version, and removed obsolete tables"
+msgstr[0] ""
+msgstr[1] ""
+
+#: blogroll.plugin.php:905
+msgid "Could not Import previous data. please import manually and drop tables."
+msgstr ""
