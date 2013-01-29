@@ -3,7 +3,7 @@
 	<name>Blogroll</name>
 	<license url="http://www.apache.org/licenses/LICENSE-2.0.html">Apache Software License 2.0</license>
 	<author url="http://habariproject.org/">The Habari Community</author>
-	<version>0.7</version>
+	<version>0.8</version>
 	<url>http://wiki.habariproject.org/en/plugins/blogroll</url>
 	<description><![CDATA[Display and manage a blogroll on your blog.]]></description>
 	<copyright>2009</copyright>
