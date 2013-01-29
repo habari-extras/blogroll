@@ -1,8 +1,6 @@
 <?php
 
-namespace Habari\BlogrollPlugin;
-
-use \Habari as Habari;
+namespace Habari;
 
 /**
  * Blogroll Plugin
@@ -13,7 +11,7 @@ use \Habari as Habari;
  * @todo Update wiki docs, and inline code docs
  * url, feedurl, ownername, relationship
  */
-class Blogroll extends Habari\Plugin
+class Blogroll extends Plugin
 {
 	const API_VERSION = 005;
 	const CONTENT_TYPE = 'blogroll';
@@ -44,21 +42,21 @@ class Blogroll extends Habari\Plugin
 	 */
 	public function action_plugin_activation()
 	{
-		if ( ! Habari\CronTab::get_cronjob( 'blogroll:update' ) ) {
-			Habari\CronTab::add_hourly_cron( 'blogroll:update', 'blogroll_update_cron', 'Updates the blog updated timestamp from weblogs.com' );
+		if ( ! CronTab::get_cronjob( 'blogroll:update' ) ) {
+			CronTab::add_hourly_cron( 'blogroll:update', 'blogroll_update_cron', 'Updates the blog updated timestamp from weblogs.com' );
 		}
 
-		Habari\Options::set( 'blogroll__api_version', self::API_VERSION );
-		Habari\Options::set( 'blogroll__use_updated', true );
-		Habari\Options::set( 'blogroll__max_links', '10' );
-		Habari\Options::set( 'blogroll__sort_by', 'id' );
-		Habari\Options::set( 'blogroll__direction', 'ASC' );
-		Habari\Options::set( 'blogroll__list_title', 'Blogroll' );
+		Options::set( 'blogroll__api_version', self::API_VERSION );
+		Options::set( 'blogroll__use_updated', true );
+		Options::set( 'blogroll__max_links', '10' );
+		Options::set( 'blogroll__sort_by', 'id' );
+		Options::set( 'blogroll__direction', 'ASC' );
+		Options::set( 'blogroll__list_title', 'Blogroll' );
 
-		Habari\Post::add_new_type( self::CONTENT_TYPE );
+		Post::add_new_type( self::CONTENT_TYPE );
 
 		// Give anonymous users access, if the group exists
-		$group = Habari\UserGroup::get_by_name( 'anonymous' );
+		$group = UserGroup::get_by_name( 'anonymous' );
 		if ( $group ) {
 			$group->grant( self::CONTENT_TYPE, 'read' );
 		}
@@ -69,8 +67,8 @@ class Blogroll extends Habari\Plugin
 	 */
 	public function action_plugin_deactivation( $file )
 	{
-		Habari\CronTab::delete_cronjob( 'blogroll:update' );
-		Habari\Options::delete( 'blogroll__api_version' );
+		CronTab::delete_cronjob( 'blogroll:update' );
+		Options::delete( 'blogroll__api_version' );
 	}
 
 	public function filter_post_type_display($type, $foruse)
@@ -86,7 +84,7 @@ class Blogroll extends Habari\Plugin
 
 	public function action_init() {
 		// remove legacy tables and import
-		if ( Habari\Options::get( 'blogroll__db_version' ) || Habari\Options::get( 'blogroll__api_version' ) < 004 ) {
+		if ( Options::get( 'blogroll__db_version' ) || Options::get( 'blogroll__api_version' ) < 004 ) {
 			$this->upgrade_pre_004();
 		}
 		$this->add_template( 'blogroll', dirname($this->get_file()) . '/templates/blogroll.php' );
@@ -101,8 +99,8 @@ class Blogroll extends Habari\Plugin
 
 	public function action_admin_header( $theme )
 	{
-		if ( 'publish' == $theme->page && !empty($theme->form) && $theme->form->content_type->value == Habari\Post::type(self::CONTENT_TYPE) ) {
-			Habari\Stack::add( 'admin_stylesheet', array( $this->get_url() . '/blogroll.css', 'screen' ), 'blogroll' );
+		if ( 'publish' == $theme->page && !empty($theme->form) && $theme->form->content_type->value == Post::type(self::CONTENT_TYPE) ) {
+			Stack::add( 'admin_stylesheet', array( $this->get_url() . '/blogroll.css', 'screen' ), 'blogroll' );
 		}
 	}
 
@@ -112,7 +110,7 @@ class Blogroll extends Habari\Plugin
 	 */
 	public function configure()
 	{
-		$form = new Habari\FormUI( 'blogroll' );
+		$form = new FormUI( 'blogroll' );
 
 		// display settings
 		$display_wrap = $form->append( 'fieldset', 'display', _t( 'Display Settings', self::DOMAIN ) );
@@ -125,8 +123,8 @@ class Blogroll extends Habari\Plugin
 		);
 		$sort_bys = array_merge(
 			array_combine(
-				array_keys(Habari\Post::default_fields()),
-				array_map( 'ucwords', array_keys(Habari\Post::default_fields()) )
+				array_keys(Post::default_fields()),
+				array_map( 'ucwords', array_keys(Post::default_fields()) )
 			),
 			array( 'RAND()' => _t( 'Randomly', self::DOMAIN ) )
 			);
@@ -152,20 +150,20 @@ class Blogroll extends Habari\Plugin
 		return $form->get();
 	}
 
-	public function formui_submit( Habari\FormUI $form )
+	public function formui_submit( FormUI $form )
 	{
-		Habari\Session::notice( _t( 'Blogroll options saved.', self::DOMAIN ) );
+		Session::notice( _t( 'Blogroll options saved.', self::DOMAIN ) );
 		$form->save();
 	}
 
-    public function action_admin_posts_action( $response, $action, Habari\Posts $posts ) {
+    public function action_admin_posts_action( $response, $action, Posts $posts ) {
         if ( $action == 'updateBlogroll' ) {
             $good = $bad = 0;
             foreach ($posts as $post) {
                 if( $post->info->url ) {
                     $data = $this->get_info_from_url($post->info->url);
                     if ( $data ) {
-                        $data = array_map( function($a){ return Habari\InputFilter::filter($a); }, $data );
+                        $data = array_map( function($a){ return InputFilter::filter($a); }, $data );
                         $post->title= $data['name'];
                         $post->info->url= $data['url'];
                         $post->content= $data['description'];
@@ -188,7 +186,7 @@ class Blogroll extends Habari\Plugin
     }
 
     public function filter_posts_manage_actions($actions) {
-        if ( $_GET['type'] == Habari\Post::type(self::CONTENT_TYPE) ) {
+        if ( $_GET['type'] == Post::type(self::CONTENT_TYPE) ) {
             $action = array(
                 'action' => 'itemManage.update(\'updateBlogroll\');return false;',
                 'title' => 'Update Selected',
@@ -199,24 +197,24 @@ class Blogroll extends Habari\Plugin
         return $actions;
     }
 
-	public function action_publish_post( Habari\Post $post, Habari\FormUI $form ) {
-		if ( $post->content_type == Habari\Post::type(self::CONTENT_TYPE) ) {
+	public function action_publish_post( Post $post, FormUI $form ) {
+		if ( $post->content_type == Post::type(self::CONTENT_TYPE) ) {
 			foreach ($this->info_fields as $field_name) {
 				$post->info->$field_name= $form->$field_name->value;
 			}
 			if(isset($form->quick_url) && $form->quick_url->value != '' ) {
 				$data = $this->get_info_from_url($form->quick_url->value);
 				if ( $data ) {
-					$data = array_map( function($a) { return Habari\InputFilter::filter($a); }, $data );
+					$data = array_map( function($a) { return InputFilter::filter($a); }, $data );
 					$post->title= $data['name'];
 					$post->info->url= $data['url'];
 					$post->content= $data['description'];
 					$post->info->feedurl= $data['feed'];
-					$post->slug= Habari\Utils::slugify($data['name']);
-					$post->status= Habari\Post::status( 'published' );
+					$post->slug= Utils::slugify($data['name']);
+					$post->status= Post::status( 'published' );
 				}
 				else {
-					Habari\Session::error( _t("Could not find information for {$form->quick_url->value}. Please enter the information manually.", self::DOMAIN ) );
+					Session::error( _t("Could not find information for {$form->quick_url->value}. Please enter the information manually.", self::DOMAIN ) );
 					$title = parse_url($form->quick_url->value, PHP_URL_HOST);
 					$post->title = ( $title ) ? $title : $form->quick_url->value;
 					$post->info->url = $form->quick_url->value;
@@ -226,11 +224,11 @@ class Blogroll extends Habari\Plugin
 		}
 	}
 
-	public function action_form_publish( Habari\FormUI $form, Habari\Post $post) {
+	public function action_form_publish( FormUI $form, Post $post) {
 
-		if( $form->content_type->value == Habari\Post::type(self::CONTENT_TYPE) ) {
+		if( $form->content_type->value == Post::type(self::CONTENT_TYPE) ) {
 
-			if ( !Habari\Controller::get_var( 'id' ) ) {
+			if ( !Controller::get_var( 'id' ) ) {
 				// Quick link button to automagically discover info
 				$quicklink_controls= $form->append( 'tabs', 'quicklink_controls' );
 
@@ -246,7 +244,7 @@ class Blogroll extends Habari\Plugin
 			}
 
 			// Remove fields we don't need
-			if ( $form->silos instanceof Habari\FormControl ) {
+			if ( $form->silos instanceof FormControl ) {
 				$form->silos->remove();
 			}
 			$form->comments_enabled->value = 0;
@@ -273,7 +271,7 @@ class Blogroll extends Habari\Plugin
 			$extras->append( 'text', 'ownername', 'null:null', _t( 'Owner Name', self::DOMAIN ), 'tabcontrol_text' );
 			$extras->ownername->value = $post->info->ownername;
 
-			$relationships = Habari\Plugins::filter( 'blogroll_relationships', $this->relationships );
+			$relationships = Plugins::filter( 'blogroll_relationships', $this->relationships );
 			$extras->append( 'select', 'relationship', 'null:null', _t( 'Relationship', self::DOMAIN ), $relationships, 'tabcontrol_select' );
 			$extras->relationship->value = $post->info->relationship;
 
@@ -330,7 +328,7 @@ class Blogroll extends Habari\Plugin
 
 	public function filter_post_xfn_relationships( $relationships, Post $post )
 	{
-		if ($post->content_type == Habari\Post::type(self::CONTENT_TYPE)) {
+		if ($post->content_type == Post::type(self::CONTENT_TYPE)) {
 			$xfn_rel = array($relationships);
 
 			// "me" is exclusive of all other XFN values.
@@ -357,12 +355,12 @@ class Blogroll extends Habari\Plugin
 	public static function get_info_from_url( $url )
 	{
 		$info= array();
-		$data= Habari\RemoteRequest::get_contents( $url );
+		$data= RemoteRequest::get_contents( $url );
 		$feed= self::get_feed_location( $data, $url );
 
 		if ( $feed ) {
 			$info['feed']= $feed;
-			$data= Habari\RemoteRequest::get_contents( $feed );
+			$data= RemoteRequest::get_contents( $feed );
 		}
 		else {
 			$info['feed']= $url;
@@ -446,40 +444,40 @@ class Blogroll extends Habari\Plugin
 
 	public function theme_show_blogroll( $theme, $user_params = array() )
 	{
-		$theme->blogroll_title = Habari\Options::get( 'blogroll__list_title' );
+		$theme->blogroll_title = Options::get( 'blogroll__list_title' );
 
 		// Build the params array to pass it to the get() method
-		$order_by = Habari\Options::get( 'blogroll__sort_by' );
-		$direction = Habari\Options::get( 'blogroll__direction' );
+		$order_by = Options::get( 'blogroll__sort_by' );
+		$direction = Options::get( 'blogroll__direction' );
 
 		$params = array(
-			'limit' => Habari\Options::get( 'blogroll__max_links' ),
+			'limit' => Options::get( 'blogroll__max_links' ),
 			'orderby' => $order_by . ' ' . $direction,
-			'status' => Habari\Post::status( 'published' ),
-			'content_type' => Habari\Post::type(self::CONTENT_TYPE),
+			'status' => Post::status( 'published' ),
+			'content_type' => Post::type(self::CONTENT_TYPE),
 		);
 
-		$theme->blogs = Habari\Posts::get( $params );
+		$theme->blogs = Posts::get( $params );
 
 		return $theme->fetch( 'blogroll' );
 	}
 
 	public function filter_habminbar( array $menu )
 	{
-		$menu['blogroll']= array( 'Blogroll', Habari\URL::get( 'admin', 'page=publish&content_type='.self::CONTENT_TYPE ) );
+		$menu['blogroll']= array( 'Blogroll', URL::get( 'admin', 'page=publish&content_type='.self::CONTENT_TYPE ) );
 		return $menu;
 	}
 
 	public function filter_rewrite_rules( array $rules )
 	{
-		$rules[] = new Habari\RewriteRule(array(
+		$rules[] = new RewriteRule(array(
 			'name' => 'blogroll_opml',
 			'parse_regex' => '/^blogroll\/opml\/?$/i',
 			'build_str' => 'blogroll/opml',
-			'handler' => 'Habari\ActionHandler',
+			'handler' => 'ActionHandler',
 			'action' => 'blogroll_opml',
 			'priority' => 2,
-			'rule_class' => Habari\RewriteRule::RULE_PLUGIN,
+			'rule_class' => RewriteRule::RULE_PLUGIN,
 			'is_active' => 1,
 			'description' => 'Rewrite for Blogroll OPML feed.'
 		));
@@ -491,21 +489,21 @@ class Blogroll extends Habari\Plugin
 	 *
 	 * @todo add tags
 	 */
-	public function action_handler_blogroll_opml( Habari\SuperGlobal $handler_vars )
+	public function action_handler_blogroll_opml( SuperGlobal $handler_vars )
 	{
 		$opml = new \SimpleXMLElement( '<opml version="1.1"></opml>' );
 
 		$head = $opml->addChild( 'head' );
-		$head->addChild( 'title', Habari\Options::get( 'title' ) );
+		$head->addChild( 'title', Options::get( 'title' ) );
 		$head->addChild( 'dateCreated', gmdate( 'D, d M Y G:i:s e' ) );
 
 		$body = $opml->addChild( 'body' );
 
-		$blogs = Habari\Posts::get(
+		$blogs = Posts::get(
 			array(
-				'content_type' => Habari\Post::type(self::CONTENT_TYPE),
+				'content_type' => Post::type(self::CONTENT_TYPE),
 				'nolimit' => TRUE,
-				'status' => Habari\Post::status( 'published' )
+				'status' => Post::status( 'published' )
 			)
 		);
 
@@ -529,7 +527,7 @@ class Blogroll extends Habari\Plugin
 			}
 			$outline->addAttribute( 'type', 'link' );
 		}
-		$opml = Habari\Plugins::filter( 'blogroll_opml', $opml, $handler_vars );
+		$opml = Plugins::filter( 'blogroll_opml', $opml, $handler_vars );
 		$opml = $opml->asXML();
 
 		ob_clean();
@@ -569,7 +567,7 @@ class Blogroll extends Habari\Plugin
 					$stage = 2;
 				}
 				elseif ( isset($_FILES['opml_file']) && is_uploaded_file($_FILES['opml_file']['tmp_name']) ) {
-					Habari\Options::set(
+					Options::set(
 						"blogroll_{$_FILES['opml_file']['tmp_name']}",
 						file_get_contents($_FILES['opml_file']['tmp_name'])
 					);
@@ -605,7 +603,7 @@ class Blogroll extends Habari\Plugin
 		$inputs = array_merge( $default_values, $inputs );
 		extract( $inputs );
 		if( $warning != '' ) {
-			Habari\Session::error($warning);
+			Session::error($warning);
 		}
 
 		$output = <<<BR_IMPORT_STAGE1
@@ -640,9 +638,9 @@ BR_IMPORT_STAGE1;
 		$inputs = array_merge( $default_values, $inputs );
 		extract( $inputs );
 
-		$ajax_url = Habari\URL::get( 'auth_ajax', array( 'context' => 'blogroll_import_opml' ) );
-		Habari\EventLog::log(_t( 'Starting OPML Blogroll import', self::DOMAIN ));
-		Habari\Options::set( 'import_errors', array());
+		$ajax_url = URL::get( 'auth_ajax', array( 'context' => 'blogroll_import_opml' ) );
+		EventLog::log(_t( 'Starting OPML Blogroll import', self::DOMAIN ));
+		Options::set( 'import_errors', array());
 
 		$output = <<<WP_IMPORT_STAGE2
 			<p>Import In Progress</p>
@@ -663,18 +661,18 @@ WP_IMPORT_STAGE2;
 		return $output;
 	}
 
-	public function action_auth_ajax_blogroll_import_opml( Habari\ActionHandler $handler )
+	public function action_auth_ajax_blogroll_import_opml( ActionHandler $handler )
 	{
 		$valid_fields = array( 'opml_url', 'opml_file' );
 		$inputs = array_intersect_key( $_POST->getArrayCopy(), array_flip( $valid_fields ) );
 		extract( $inputs );
 
 		if ( ! empty($opml_url) ) {
-			$file = Habari\RemoteRequest::get_contents( $opml_url );
+			$file = RemoteRequest::get_contents( $opml_url );
 		}
 		elseif ( ! empty($opml_file) ) {
-			$file = Habari\Options::get("blogroll_$opml_file");
-			Habari\Options::delete("blogroll_$opml_file");
+			$file = Options::get("blogroll_$opml_file");
+			Options::delete("blogroll_$opml_file");
 		}
 		try {
 			if ( empty($file) ) {
@@ -711,22 +709,22 @@ WP_IMPORT_STAGE2;
 			$atts = (array) $outline->attributes();
 			$params = $this->map_opml_atts( $atts['@attributes'] );
 			if ( isset( $params['url'] ) && isset( $params['title'] ) ) {
-				if ( count( Habari\Posts::get( array( 'all:info' => array( 'url' => $params['url'] ) ) ) ) >= 1 ) {
+				if ( count( Posts::get( array( 'all:info' => array( 'url' => $params['url'] ) ) ) ) >= 1 ) {
 					continue;
 				}
-				$params = array_map( function($a) { return Habari\InputFilter::filter($a); }, $params );
+				$params = array_map( function($a) { return InputFilter::filter($a); }, $params );
 				extract($params);
-				$user = Habari\User::identify();
+				$user = User::identify();
 				$params = array(
 					'title' => $title,
-					'pubdate' => isset($pubdate) ? Habari\HabariDateTime::date_create($pubdate) : Habari\HabariDateTime::date_create(),
-					'updated' => isset($updated) ? Habari\HabariDateTime::date_create($updated) : Habari\HabariDateTime::date_create(),
+					'pubdate' => isset($pubdate) ? HabariDateTime::date_create($pubdate) : HabariDateTime::date_create(),
+					'updated' => isset($updated) ? HabariDateTime::date_create($updated) : HabariDateTime::date_create(),
 					'content' => isset($content) ? $content : '',
-					'status' => Habari\Post::status( 'published' ),
-					'content_type' => Habari\Post::type(self::CONTENT_TYPE),
+					'status' => Post::status( 'published' ),
+					'content_type' => Post::type(self::CONTENT_TYPE),
 					'user_id' => $user->id,
 				);
-				$blog = Habari\Post::create($params);
+				$blog = Post::create($params);
 
 				foreach($this->info_fields as $field ) {
 					if ( isset(${$field}) && ${$field} ) {
@@ -784,16 +782,16 @@ WP_IMPORT_STAGE2;
 	 */
 	public function filter_blogroll_update_cron( $success )
 	{
-		if ( Habari\Options::get( 'blogroll__use_updated' ) ) {
-			$request = new Habari\RemoteRequest( 'http://rpc.weblogs.com/changes.xml', 'GET' );
-			$request->add_header( array( 'If-Modified-Since', Habari\Options::get( 'blogroll__last_update' ) ) );
+		if ( Options::get( 'blogroll__use_updated' ) ) {
+			$request = new RemoteRequest( 'http://rpc.weblogs.com/changes.xml', 'GET' );
+			$request->add_header( array( 'If-Modified-Since', Options::get( 'blogroll__last_update' ) ) );
 			try {
 				if ( $request->execute() ) {
 					try {
 						$xml = new \SimpleXMLElement( $request->get_response_body() );
 					}
 					catch ( \Exception $e ) {
-						Habari\EventLog::log( 'Could not parse weblogs.com Changes XML file' );
+						EventLog::log( 'Could not parse weblogs.com Changes XML file' );
 						return false;
 					}
 					$atts = $xml->attributes();
@@ -805,7 +803,7 @@ WP_IMPORT_STAGE2;
 						$match['feedurl'] = (string) $atts['rssUrl'];
 						$update = $updated - (int) $atts['when'];
 						// use LIKE for info matching
-						$posts = Habari\DB::get_results(
+						$posts = DB::get_results(
 							'SELECT * FROM {posts}
 							WHERE
 							{posts}.id IN (
@@ -816,28 +814,28 @@ WP_IMPORT_STAGE2;
 							array(
 								'url', "%{$match['url']}%",
 								'feedurl', "%{$match['feedurl']}%",
-								Habari\Post::status( 'published' ), Habari\Post::type(self::CONTENT_TYPE)
+								Post::status( 'published' ), Post::type(self::CONTENT_TYPE)
 							),
 							'Post'
 						);
-						if ( $posts instanceof Habari\Posts && $posts->count() > 0 ) {
+						if ( $posts instanceof Posts && $posts->count() > 0 ) {
 							foreach ( $posts as $post ) {
-								$post->updated = Habari\HabariDateTime::create($update);
+								$post->updated = HabariDateTime::create($update);
 								$post->update();
-								Habari\EventLog::log("Updated {$post->title} last update time from weblogs.com");
+								EventLog::log("Updated {$post->title} last update time from weblogs.com");
 							}
 						}
 					}
-					Habari\Options::set( 'blogroll__last_update', gmdate( 'D, d M Y G:i:s e' ) );
+					Options::set( 'blogroll__last_update', gmdate( 'D, d M Y G:i:s e' ) );
 					return true;
 				}
 				else {
-					Habari\EventLog::log( 'Could not connect to weblogs.com' );
+					EventLog::log( 'Could not connect to weblogs.com' );
 					return false;
 				}
 			}
 			catch ( \Exception $e ) {
-				Habari\EventLog::log( 'Could not connect to weblogs.com (request failed)','error','default','Blogroll',$e );
+				EventLog::log( 'Could not connect to weblogs.com (request failed)','error','default','Blogroll',$e );
 				return false;
 			}
 		}
@@ -846,24 +844,24 @@ WP_IMPORT_STAGE2;
 
 	public function upgrade_pre_004()
 	{
-		Habari\DB::register_table( 'blogroll' );
-		Habari\DB::register_table( 'bloginfo' );
-		Habari\DB::register_table( 'tag2blog' );
+		DB::register_table( 'blogroll' );
+		DB::register_table( 'bloginfo' );
+		DB::register_table( 'tag2blog' );
 
-		if ( ! in_array( Habari\DB::table( 'blogroll' ), Habari\DB::list_tables() ) ) {
-			Habari\Options::set( 'blogroll__api_version', self::API_VERSION );
+		if ( ! in_array( DB::table( 'blogroll' ), DB::list_tables() ) ) {
+			Options::set( 'blogroll__api_version', self::API_VERSION );
 			return;
 		}
 
-		Habari\Post::add_new_type(self::CONTENT_TYPE);
+		Post::add_new_type(self::CONTENT_TYPE);
 
 		$opml = new \SimpleXMLElement( '<opml version="1.1"></opml>' );
 		$head = $opml->addChild( 'head' );
-		$head->addChild( 'title', Habari\Options::get( 'title' ) );
+		$head->addChild( 'title', Options::get( 'title' ) );
 		$head->addChild( 'dateCreated', gmdate( 'D, d M Y G:i:s e' ) );
 		$body = $opml->addChild( 'body' );
 
-		$blogs = Habari\DB::get_results("SELECT * FROM {blogroll}", array());
+		$blogs = DB::get_results("SELECT * FROM {blogroll}", array());
 		foreach ( $blogs as $blog ) {
 			$outline = $body->addChild( 'outline' );
 			$outline->addAttribute( 'text', $blog->name );
@@ -876,10 +874,10 @@ WP_IMPORT_STAGE2;
 		}
 		try {
 			$count = $this->import_opml($opml->body);
-			Habari\DB::query( 'DROP TABLE IF EXISTS {blogroll}' );
-			Habari\DB::query( 'DROP TABLE IF EXISTS {bloginfo}' );
-			Habari\DB::query( 'DROP TABLE IF EXISTS {tag2blog}' );
-			Habari\EventLog::log(
+			DB::query( 'DROP TABLE IF EXISTS {blogroll}' );
+			DB::query( 'DROP TABLE IF EXISTS {bloginfo}' );
+			DB::query( 'DROP TABLE IF EXISTS {tag2blog}' );
+			EventLog::log(
 				sprintf(
 					_n(
 						'Imported %d blog from previous Blogroll version, and removed obsolete tables',
@@ -892,12 +890,12 @@ WP_IMPORT_STAGE2;
 			);
 		}
 		catch (\Exception $e) {
-			Habari\EventLog::log( _t( 'Could not Import previous data. please import manually and drop tables.', self::DOMAIN ) );
+			EventLog::log( _t( 'Could not Import previous data. please import manually and drop tables.', self::DOMAIN ) );
 		}
 
-		Habari\Options::delete( 'blogroll__db_version' );
-		Habari\Options::set( 'blogroll__api_version', self::API_VERSION );
-		Habari\Options::set( 'blogroll__sort_by', 'id' );
+		Options::delete( 'blogroll__db_version' );
+		Options::set( 'blogroll__api_version', self::API_VERSION );
+		Options::set( 'blogroll__sort_by', 'id' );
 	}
 
 	/**
@@ -918,11 +916,11 @@ WP_IMPORT_STAGE2;
 		$params = array(
 			'limit' => ( $block->max_links ? $block->max_links : 10 ), // in case it is not yet configured
 			'orderby' => $order_by . ' ' . $direction,
-			'status' => Habari\Post::status( 'published' ),
-			'content_type' => Habari\Post::type( self::CONTENT_TYPE ),
+			'status' => Post::status( 'published' ),
+			'content_type' => Post::type( self::CONTENT_TYPE ),
 		);
 
-		$blogs = Habari\Posts::get( $params );
+		$blogs = Posts::get( $params );
 		$list = array();
 
 		if ( ! empty( $blogs ) ) {
@@ -945,8 +943,8 @@ WP_IMPORT_STAGE2;
 		$max = $form->append( 'text', 'max_links', $block, _t( 'Max. displayed links: ', self::DOMAIN ) );
 
 		$sort_bys = array_merge( array_combine(
-			array_keys( Habari\Post::default_fields() ),
-			array_map( 'ucwords', array_keys( Habari\Post::default_fields() ) )
+			array_keys( Post::default_fields() ),
+			array_map( 'ucwords', array_keys( Post::default_fields() ) )
 			),
 			array( 'RAND()' => _t( 'Randomly', self::DOMAIN ) )
 			);
