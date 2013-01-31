@@ -1,3 +1,4 @@
+<?php namespace Habari; ?>
 <!-- To customize this template, copy it to your currently active theme directory and edit it -->
 <div id="blogroll">
 	<h2><?php echo $blogroll_title; ?></h2>

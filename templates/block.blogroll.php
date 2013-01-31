@@ -1,3 +1,4 @@
+<?php namespace Habari; ?>
 <h3><?php echo $content->list_title; ?></h3>
 <ul>
 	<?php $links = $content->list;

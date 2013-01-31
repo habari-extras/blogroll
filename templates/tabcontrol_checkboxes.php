@@ -1,3 +1,4 @@
+<?php namespace Habari; ?>
 <div class="container<?php echo ($class) ? ' ' . $class : ''?>"<?php echo ($id) ? ' id="' . $id . '"' : ''?>>
 	<div class="pct25"><label><?php echo $this->caption; ?></label></div>
 	<div class="pct75">
