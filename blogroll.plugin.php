@@ -910,8 +910,8 @@ WP_IMPORT_STAGE2;
 	public function action_block_content_blogroll( $block, $theme )
 	{
 		// Build the params array to pass it to the get() method
-		$order_by = $block->sort_by;
-		$direction = $block->direction;
+		$order_by = ( isset( $block->sort_by ) ) ? $block->sort_by : 'pubdate';
+		$direction = ( isset( $block->direction ) ) ? $block->direction : 'DESC';
 
 		$params = array(
 			'limit' => ( $block->max_links ? $block->max_links : 10 ), // in case it is not yet configured
